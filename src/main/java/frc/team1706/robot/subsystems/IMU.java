@@ -34,38 +34,38 @@ public class IMU {
 			DriverStation.reportError("Error instantiating navX MXP:  " + ex.getMessage(), true);
 		}
 	}
-	
+
 	public double getAngle() {
 		//This returns degrees (0 to 360)
 		return MathUtils.resolveDeg(ahrs.getYaw() + offset);
 	}
-	
+
 	public static double getVelocity() {
 		return Math.sqrt((Math.pow(ahrs.getVelocityX(), 2) + Math.pow(ahrs.getVelocityY(), 2)));
 	}
-	
+
 	public boolean collisionDetected() {
 		boolean collisionDetected = false;
-		
+
 		currentAccelX = ahrs.getWorldLinearAccelX();
-        jerkX = currentAccelX - currentAccelY;
-        previousAccelX = currentAccelX;
-        currentAccelY = ahrs.getWorldLinearAccelY();
-        jerkY = currentAccelY - previousAccelY;
-        previousAccelY = currentAccelY;
-        
-        if (( Math.abs(jerkX) > collisionThreshold ) || ( Math.abs(jerkY) > collisionThreshold )) {
-            collisionDetected = true;
-        }
-		
+		jerkX = currentAccelX - currentAccelY;
+		previousAccelX = currentAccelX;
+		currentAccelY = ahrs.getWorldLinearAccelY();
+		jerkY = currentAccelY - previousAccelY;
+		previousAccelY = currentAccelY;
+
+		if ((Math.abs(jerkX) > collisionThreshold) || (Math.abs(jerkY) > collisionThreshold)) {
+			collisionDetected = true;
+		}
+
 		return collisionDetected;
 	}
-	
-	public double getVelocityX () {
+
+	public double getVelocityX() {
 		return ahrs.getVelocityX();
 	}
-	
-	public double getVelocityY () {
+
+	public double getVelocityY() {
 		return ahrs.getVelocityY();
 	}
 
@@ -73,7 +73,7 @@ public class IMU {
 		ahrs.reset();
 		setOffset(0);
 	}
-	
+
 	public void setOffset(double offset) {
 		this.offset = offset;
 	}

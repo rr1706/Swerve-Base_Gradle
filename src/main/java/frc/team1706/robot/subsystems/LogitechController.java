@@ -4,11 +4,12 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class LogitechController extends Joystick {
 	private Joystick stick;
+
 	public LogitechController(int port) {
 		super(port);
 		stick = new Joystick(port);
 	}
-	
+
 	public boolean X() {
 		return stick.getRawButton(1);
 	}

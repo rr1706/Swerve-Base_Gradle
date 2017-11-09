@@ -10,7 +10,6 @@ import java.util.Properties;
 
 import frc.team1706.robot.subsystems.IMU;
 import frc.team1706.robot.subsystems.JetsonServer;
-import frc.team1706.robot.subsystems.LogitechController;
 import frc.team1706.robot.subsystems.PowerPanel;
 import frc.team1706.robot.subsystems.SwerveDrivetrain;
 import frc.team1706.robot.subsystems.SwerveDrivetrain.WheelType;
@@ -21,16 +20,8 @@ import frc.team1706.robot.utilities.PIDController;
 import frc.team1706.robot.utilities.Vector;
 import frc.team1706.robot.RRLogger;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DigitalOutput;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.PWM.PeriodMultiplier;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -127,7 +118,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	private void keepAngle() {
-	// TODO keep angle
+		// TODO keep angle
 		SwerveCompensate.enable();
 
 		if (xbox1.DPad() != -1) {
@@ -142,8 +133,8 @@ public class Robot extends IterativeRobot {
 		// This will update the angle to keep the robot's orientation
 		if (Math.abs(RCW) > 0.132 || // If right stick is pressed
 				(Math.abs(FWD) < 0.01 && Math.abs(STR) < 0.01) && // If left stick is not pressed
-				(xbox1.DPad() == -1) && // If dpad is not pressed
-				(!autonomous)) { // If teleop
+						(xbox1.DPad() == -1) && // If dpad is not pressed
+						(!autonomous)) { // If teleop
 
 			SwerveCompensate.setPID(0.015, 0.0, 0.0);
 			keepAngle = imu.getAngle();
@@ -169,13 +160,13 @@ public class Robot extends IterativeRobot {
 	}
 
 	/**
-	 * Each potentiometer is positioned slightly differently so its initial value is different than the others, 
+	 * Each potentiometer is positioned slightly differently so its initial value is different than the others,
 	 * so even when the wheels are pointing straight there are differences.
 	 * Proper values may be found and must be calculated for each wheel.
 	 */
 	private void loadOffsets() {
 		// TODO load offsets
-		
+
 		// Set the offset of each wheel from a file on the roborio
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(Double.parseDouble(application.getProperty("front_right_offset", "0")));
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setOffset(Double.parseDouble(application.getProperty("front_left_offset", "0")));
@@ -217,7 +208,7 @@ public class Robot extends IterativeRobot {
 	 * This function is run when the robot is first started up and should be used for any initialization code.
 	 */
 	public void robotInit() {
-	// TODO robot init
+		// TODO robot init
 		compressor = new Compressor(0);
 
 		// Load the wheel offset file from the roborio
@@ -266,11 +257,11 @@ public class Robot extends IterativeRobot {
 		SwerveCompensate.setInputRange(0.0, 360.0);
 		SwerveCompensate.setTolerance(1.0);
 
-		SwerveCompensate.enable();		
+		SwerveCompensate.enable();
 	}
 
 	public void autonomousInit() {
-	// TODO autonomous init
+		// TODO autonomous init
 
 		timeCheck = true;
 		imu.reset();
@@ -315,7 +306,7 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during autonomous
 	 */
 	public void autonomousPeriodic() {
-	// TODO autonomous periodic
+		// TODO autonomous periodic
 		robotState = 0;
 
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
@@ -329,7 +320,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Elapsed Time", Time.get());
 
 		switch (autoMove) {
-			
+
 			// Pause the robot for x seconds at the start of auto
 			case 0:
 
@@ -450,7 +441,7 @@ public class Robot extends IterativeRobot {
 
 				}
 				break;
-		}		
+		}
 	}
 
 	public void teleopInit() {
@@ -470,7 +461,7 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-	// TODO teleop periodic
+		// TODO teleop periodic
 		autonomous = false;
 		robotState = 1;
 
@@ -497,10 +488,10 @@ public class Robot extends IterativeRobot {
 		}
 
 		// forward command (-1.0 to 1.0)
-		FWD = -xbox1.LStickY()/10.5*Ds.getBatteryVoltage();
+		FWD = -xbox1.LStickY() / 10.5 * Ds.getBatteryVoltage();
 
 		// strafe command (-1.0 to 1.0)
-		STR = xbox1.LStickX()/10.5*Ds.getBatteryVoltage();
+		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage();
 
 		// rotate clockwise command (-1.0 to 1.0)
 		// Limited to half speed because of wheel direction calculation issues when rotating quickly
@@ -526,7 +517,7 @@ public class Robot extends IterativeRobot {
 		if (Math.abs(xbox1.RStickX()) <= 0.016) {
 			RCW = 0.0;
 		}
-		
+
 		// Let robot rotate at full speed if it is not translating
 		if (FWD + STR == 0.0) {
 			RCW = xbox1.RStickX();
@@ -559,8 +550,8 @@ public class Robot extends IterativeRobot {
 
 		SmartDashboard.putNumber("FWD", FWD);
 		SmartDashboard.putNumber("STR", STR);
-		SmartDashboard.putNumber("RCW", RCW);				
-		SmartDashboard.putNumber("IMU Angle", imu.getAngle());			
+		SmartDashboard.putNumber("RCW", RCW);
+		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 		double headingDeg = imu.getAngle();
 		double headingRad = MathUtils.degToRad(headingDeg);
@@ -630,7 +621,7 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during test mode
 	 */
 	public void testPeriodic() {
-	// TODO test
+		// TODO test
 		LiveWindow.run();
 
 		double speed = (xbox1.RStickX() * 0.3);

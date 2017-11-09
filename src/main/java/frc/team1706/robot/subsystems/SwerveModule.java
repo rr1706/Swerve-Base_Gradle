@@ -44,7 +44,7 @@ public class SwerveModule {
 	private double z;
 
 	private int id;
-	
+
 	/**
 	 */
 	SwerveModule(int pwmPortT, int pwmPortR, int encoderPort1, int encoderPort2) {
@@ -64,11 +64,11 @@ public class SwerveModule {
 	}
 
 	void drive() {
-		
+
 		rotationMotor.changeControlMode(TalonControlMode.Position);
-		
+
 		distance = encoder.getDistance();
-		
+
 //		rotationMotor.setAnalogPosition(MathUtils.unwrapCAN(rotationMotor.getAnalogInPosition()));
 
 		angleError = rotationMotor.getError();//MathUtils.calculateError(this.angleCommand, MathUtils.convertRange(0, 1023, 0, Math.PI * 2, rotationMotor.get()));
@@ -79,27 +79,27 @@ public class SwerveModule {
 		 * Also adjust error now to match the new wheel command.
 		 */
 		rawError = angleError;
-		
+
 		if (wheelReversed) {
 			delta = previousDistance - distance;
 		} else {
 			delta = distance - previousDistance;
 		}
-		
+
 		if (speedCommand == 0) {
 			angleError = 0;
 		}
 
-		i = Math.floor(rotationMotor.getAnalogInPosition()/1024);
-		j = this.angleCommand + i*1024;
+		i = Math.floor(rotationMotor.getAnalogInPosition() / 1024);
+		j = this.angleCommand + i * 1024;
 		k = j - rotationMotor.getAnalogInPosition();
-		
+
 		if (Math.abs(k) > 512) {
 			z = -(j - Math.signum(k) * 1024);
 		} else {
 			z = -j;
 		}
-		
+
 		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) > 256) {
 			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) * 512;
 			wheelReversed = true;
@@ -119,20 +119,20 @@ public class SwerveModule {
 		} else {
 			translationMotor.set(0.0);
 		}
-		
+
 		if (Math.abs(this.speedCommand) >= 0.1) {
 			rotationMotor.setSetpoint(z);//this.angleCommand);SmartDashboard.getNumber("Manual CAN", 0);//SmartDashboard.getNumber("Manual CAN", 0));//
 		}
-		
+
 		rightDelta = delta * Math.sin(MathUtils.degToRad(rac));
 		forwardDelta = delta * Math.cos(MathUtils.degToRad(rac));
-		
+
 		if (Math.sin(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0) {
 			movingRight = true;
 		} else {
 			movingRight = false;
 		}
-		
+
 		if (Math.cos(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0) {
 			movingFor = true;
 		} else {
@@ -141,11 +141,11 @@ public class SwerveModule {
 
 		rightSum += rightDelta;
 		forwardSum += forwardDelta;
-		
+
 		previousDistance = distance;
-		
+
 	}
-	
+
 	public void setID(int id) {
 		this.id = id;
 	}
@@ -212,11 +212,11 @@ public class SwerveModule {
 	public void resetDistance() {
 		encoder.reset();
 	}
-	
-	public boolean getReversed(){
+
+	public boolean getReversed() {
 		return this.wheelReversed;
 	}
-	
+
 	public double getRightSum() {
 		if (wheelReversed) {
 			return -rightSum;
@@ -224,7 +224,7 @@ public class SwerveModule {
 			return rightSum;
 		}
 	}
-	
+
 	public double getForwardSum() {
 		if (wheelReversed) {
 			return -forwardSum;
@@ -232,24 +232,25 @@ public class SwerveModule {
 			return forwardSum;
 		}
 	}
-	
+
 	public void resetDelta() {
 		rightSum = 0.0;
 		forwardSum = 0.0;
 	}
-	
+
 	public double getRawError() {
 		return rawError;
 	}
-	public double getrac(){
+
+	public double getrac() {
 		return rac;
 	}
-	
-	public boolean getRight(){
+
+	public boolean getRight() {
 		return movingRight;
 	}
-	
-	public boolean getFor(){
+
+	public boolean getFor() {
 		return movingFor;
 	}
 }

@@ -12,7 +12,7 @@ import java.util.Properties;
 
 /**
  * Code required to control team 1706's 2016 swerve drive train.
- * 
+ *
  * @author team1706
  */
 public class SwerveDrivetrain {
@@ -93,7 +93,7 @@ public class SwerveDrivetrain {
 			double speed = Math.sqrt(Math.pow(Wxi, 2) + Math.pow(Wyi, 2));
 			double angle = Math.atan2(Wxi, Wyi);
 			wheel.setSpeedCommand(speed);
-			wheel.setAngleCommand(MathUtils.convertRange(0, Math.PI*2, 0, 1024, MathUtils.resolveAngle(angle + wheel.getOffset())));
+			wheel.setAngleCommand(MathUtils.convertRange(0, Math.PI * 2, 0, 1024, MathUtils.resolveAngle(angle + wheel.getOffset())));
 
 			// find the maximum speed command for normalizing below
 			if (speed > max) {

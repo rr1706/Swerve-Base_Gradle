@@ -9,11 +9,9 @@ public class Vector {
 
 	/**
 	 * Initialize with rectangular coordinates.
-	 * 
-	 * @param x
-	 *        Vector length in the X direction.
-	 * @param y
-	 *        Vector length in the Y direction.
+	 *
+	 * @param x Vector length in the X direction.
+	 * @param y Vector length in the Y direction.
 	 */
 	public static Vector createWithRectangularCoordinates(double x, double y) {
 		return new Vector(x, y);
@@ -21,11 +19,9 @@ public class Vector {
 
 	/**
 	 * Set the vector components based on a direction and magnitude.
-	 * 
-	 * @param dir
-	 *        Direction, in radians, from the positive X axis.
-	 * @param mag
-	 *        Magnitude of the vector.
+	 *
+	 * @param dir Direction, in radians, from the positive X axis.
+	 * @param mag Magnitude of the vector.
 	 */
 	public static Vector createWithMagnitudeAndDirection(double dir, double mag) {
 		return new Vector(Math.cos(dir) * mag, Math.sin(dir) * mag);
@@ -33,9 +29,8 @@ public class Vector {
 
 	/**
 	 * Load a vector from a string.
-	 * 
-	 * @param string
-	 *        String in format x,y
+	 *
+	 * @param string String in format x,y
 	 * @return vector
 	 */
 	public static Vector load(String string) {
@@ -52,7 +47,7 @@ public class Vector {
 
 	/**
 	 * Get the magnitude of the vector.
-	 * 
+	 *
 	 * @return magnitude (hypotenuse).
 	 */
 	public double getMagnitude() {
@@ -61,7 +56,7 @@ public class Vector {
 
 	/**
 	 * Get the direction of the vector.
-	 * 
+	 *
 	 * @return direction in radians from the positive X axis
 	 */
 	public double getDirection() {
@@ -70,7 +65,7 @@ public class Vector {
 
 	/**
 	 * Get the X component
-	 * 
+	 *
 	 * @return x component
 	 */
 	public double getX() {
@@ -79,7 +74,7 @@ public class Vector {
 
 	/**
 	 * Get the Y component
-	 * 
+	 *
 	 * @return y component
 	 */
 	public double getY() {
@@ -88,9 +83,8 @@ public class Vector {
 
 	/**
 	 * Returns the sum of two vectors. Vectors can cancel.
-	 * 
-	 * @param two
-	 *        Second vector.
+	 *
+	 * @param two Second vector.
 	 * @return Sum of this and the second vector.
 	 */
 	public Vector add(Vector two) {

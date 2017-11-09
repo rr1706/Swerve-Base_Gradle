@@ -102,7 +102,7 @@ public class RRLogger {
 		m_DataBuffer.add(str);
 
 	}
-	
+
 	public void addPower(String dataType, double value) {
 
 		String sep = ",";
@@ -114,7 +114,7 @@ public class RRLogger {
 	public void newLine() {
 		m_DataBuffer.add("\n");
 	}
-	
+
 	public void newPowerLine() {
 		m_PowerBuffer.add("\n");
 	}

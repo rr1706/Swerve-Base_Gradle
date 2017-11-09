@@ -33,15 +33,15 @@ public class PowerPanel {
 	public static double g() {
 		return pdp.getCurrent(6);
 	}
-	
+
 	public static double h() {
 		return pdp.getCurrent(7);
 	}
-	
+
 	public static double i() {
 		return pdp.getCurrent(8);
 	}
-	
+
 	public static double j() {
 		return pdp.getCurrent(9);
 	}

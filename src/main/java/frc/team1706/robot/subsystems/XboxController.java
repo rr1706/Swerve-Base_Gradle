@@ -4,11 +4,12 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class XboxController extends Joystick {
 	private Joystick stick;
+
 	public XboxController(int port) {
 		super(port);
 		stick = new Joystick(port);
 	}
-	
+
 	public boolean A() {
 		return stick.getRawButton(1);
 	}
@@ -57,32 +58,32 @@ public class XboxController extends Joystick {
 		return stick.getRawAxis(1);
 	}
 
-	public  double LTrig() {
+	public double LTrig() {
 		return stick.getRawAxis(2);
 	}
 
-	public  double RTrig() {
+	public double RTrig() {
 		return stick.getRawAxis(3);
 	}
 
-	public  double RStickX() {
+	public double RStickX() {
 		return stick.getRawAxis(4);
 	}
 
-	public  double RStickY() {
+	public double RStickY() {
 		return stick.getRawAxis(5);
 	}
 
-	public  int DPad() {
+	public int DPad() {
 		return stick.getPOV();
 	}
-	
-	public  void rumble() {
+
+	public void rumble() {
 		stick.setRumble(RumbleType.kRightRumble, 1);
 		stick.setRumble(RumbleType.kLeftRumble, 1);
 	}
 
-	public  void stopRumble() {
+	public void stopRumble() {
 		stick.setRumble(RumbleType.kRightRumble, 0);
 		stick.setRumble(RumbleType.kLeftRumble, 0);
 	}

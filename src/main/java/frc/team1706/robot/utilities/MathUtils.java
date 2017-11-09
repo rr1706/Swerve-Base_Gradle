@@ -2,7 +2,7 @@ package frc.team1706.robot.utilities;
 
 /**
  * Various math functions
- * 
+ *
  * @author team1706
  */
 public class MathUtils {
@@ -30,10 +30,10 @@ public class MathUtils {
 
 		return direction;
 	}
-	
+
 	public static double getDelta(double num1, double num2) {
 		double delta = num1 - num2;
-		
+
 		return delta;
 	}
 
@@ -83,7 +83,7 @@ public class MathUtils {
 	public static double meterToInch(double x) {
 		return x * 39.3701;
 	}
-	
+
 	public static double inchToMeter(double x) {
 		return x / 39.3701;
 	}
@@ -93,16 +93,16 @@ public class MathUtils {
 
 		return c;
 	}
-	
+
 	public static double resolveDeg(double deg) {
 		while (deg > 360) {
 			deg -= 360;
 		}
-		
+
 		while (deg < 0) {
 			deg += 360;
 		}
-		
+
 		return deg;
 	}
 

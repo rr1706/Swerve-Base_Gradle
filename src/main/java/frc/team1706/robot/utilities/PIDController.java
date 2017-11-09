@@ -37,13 +37,10 @@ public class PIDController {
 
 	/**
 	 * Allocate a PID object with the given constants for P, I, D
-	 * 
-	 * @param Kp
-	 *        the proportional coefficient
-	 * @param Ki
-	 *        the integral coefficient
-	 * @param Kd
-	 *        the derivative coefficient
+	 *
+	 * @param Kp the proportional coefficient
+	 * @param Ki the integral coefficient
+	 * @param Kd the derivative coefficient
 	 */
 	public PIDController(double Kp, double Ki, double Kd) {
 
@@ -106,13 +103,10 @@ public class PIDController {
 	/**
 	 * Set the PID Controller gain parameters.
 	 * Set the proportional, integral, and differential coefficients.
-	 * 
-	 * @param p
-	 *        Proportional coefficient
-	 * @param i
-	 *        Integral coefficient
-	 * @param d
-	 *        Differential coefficient
+	 *
+	 * @param p Proportional coefficient
+	 * @param i Integral coefficient
+	 * @param d Differential coefficient
 	 */
 	public void setPID(double p, double i, double d) {
 		m_P = p;
@@ -122,7 +116,7 @@ public class PIDController {
 
 	/**
 	 * Get the Proportional coefficient
-	 * 
+	 *
 	 * @return proportional coefficient
 	 */
 	public double getP() {
@@ -131,7 +125,7 @@ public class PIDController {
 
 	/**
 	 * Get the Integral coefficient
-	 * 
+	 *
 	 * @return integral coefficient
 	 */
 	public double getI() {
@@ -140,7 +134,7 @@ public class PIDController {
 
 	/**
 	 * Get the Differential coefficient
-	 * 
+	 *
 	 * @return differential coefficient
 	 */
 	public double getD() {
@@ -150,7 +144,7 @@ public class PIDController {
 	/**
 	 * Return the current PID result
 	 * This is always centered on zero and constrained by the max and min outs
-	 * 
+	 *
 	 * @return the latest calculated output
 	 */
 	public double performPID() {
@@ -163,9 +157,8 @@ public class PIDController {
 	 * Rather then using the max and min in as constraints, it considers them to
 	 * be the same point and automatically calculates the shortest route to
 	 * the setpoint.
-	 * 
-	 * @param continuous
-	 *        Set to true turns on continuous, false turns off continuous
+	 *
+	 * @param continuous Set to true turns on continuous, false turns off continuous
 	 */
 	public void setContinuous(boolean continuous) {
 		m_continuous = continuous;
@@ -184,10 +177,8 @@ public class PIDController {
 	/**
 	 * Sets the maximum and minimum values expected from the input.
 	 *
-	 * @param minimumInput
-	 *        the minimum value expected from the input
-	 * @param maximumInput
-	 *        the maximum value expected from the output
+	 * @param minimumInput the minimum value expected from the input
+	 * @param maximumInput the maximum value expected from the output
 	 */
 	public void setInputRange(double minimumInput, double maximumInput) {
 		m_minimumInput = minimumInput;
@@ -198,10 +189,8 @@ public class PIDController {
 	/**
 	 * Sets the minimum and maximum values to write.
 	 *
-	 * @param minimumOutput
-	 *        the minimum value to write to the output
-	 * @param maximumOutput
-	 *        the maximum value to write to the output
+	 * @param minimumOutput the minimum value to write to the output
+	 * @param maximumOutput the maximum value to write to the output
 	 */
 	public void setOutputRange(double minimumOutput, double maximumOutput) {
 		m_minimumOutput = minimumOutput;
@@ -210,9 +199,8 @@ public class PIDController {
 
 	/**
 	 * Set the setpoint for the PIDController
-	 * 
-	 * @param setpoint
-	 *        the desired setpoint
+	 *
+	 * @param setpoint the desired setpoint
 	 */
 	public void setSetpoint(double setpoint) {
 		if (m_maximumInput > m_minimumInput) {
@@ -230,7 +218,7 @@ public class PIDController {
 
 	/**
 	 * Returns the current setpoint of the PIDController
-	 * 
+	 *
 	 * @return the current setpoint
 	 */
 	public double getSetpoint() {
@@ -239,7 +227,7 @@ public class PIDController {
 
 	/**
 	 * Retruns the current difference of the input from the setpoint
-	 * 
+	 *
 	 * @return the current error
 	 */
 	public synchronized double getError() {
@@ -249,9 +237,8 @@ public class PIDController {
 	/**
 	 * Set the percentage error which is considered tolerable for use with
 	 * OnTarget. (Input of 15.0 = 15 percent)
-	 * 
-	 * @param percent
-	 *        error which is tolerable
+	 *
+	 * @param percent error which is tolerable
 	 */
 	public void setTolerance(double percent) {
 		m_tolerance = percent;
@@ -261,7 +248,7 @@ public class PIDController {
 	 * Return true if the error is within the percentage of the total input range,
 	 * determined by setTolerance. This asssumes that the maximum and minimum input
 	 * were set using setInput.
-	 * 
+	 *
 	 * @return true if the error is less than the tolerance
 	 */
 	public boolean onTarget() {
