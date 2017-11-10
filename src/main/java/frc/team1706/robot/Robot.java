@@ -71,8 +71,6 @@ public class Robot extends IterativeRobot {
 	private double timeBase;
 	private boolean timeCheck;
 
-	private static int robotState;
-
 	private int dx = -1;
 
 	private double FWD;
@@ -113,12 +111,9 @@ public class Robot extends IterativeRobot {
 	private Properties application = new Properties();
 	private File offsets = new File("/home/lvuser/SWERVE_OFFSET.txt");
 
-	public static int getRobotState() {
-		return robotState;
-	}
-
 	private void keepAngle() {
-		// TODO keep angle
+		// LABEL keepAngle
+
 		SwerveCompensate.enable();
 
 		if (xbox1.DPad() != -1) {
@@ -165,7 +160,7 @@ public class Robot extends IterativeRobot {
 	 * Proper values may be found and must be calculated for each wheel.
 	 */
 	private void loadOffsets() {
-		// TODO load offsets
+		// LABEL load offsets
 
 		// Set the offset of each wheel from a file on the roborio
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(Double.parseDouble(application.getProperty("front_right_offset", "0")));
@@ -186,7 +181,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	private void autonomousAngle(double angle) {
-		// TODO autonomous angle
+		// LABEL autonomous angle
 
 		SwerveCompensate.setInput(imu.getAngle());
 		SwerveCompensate.setSetpoint(angle);
@@ -208,7 +203,7 @@ public class Robot extends IterativeRobot {
 	 * This function is run when the robot is first started up and should be used for any initialization code.
 	 */
 	public void robotInit() {
-		// TODO robot init
+		// LABEL robot init
 		compressor = new Compressor(0);
 
 		// Load the wheel offset file from the roborio
@@ -261,7 +256,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	public void autonomousInit() {
-		// TODO autonomous init
+		// LABEL autonomous init
 
 		timeCheck = true;
 		imu.reset();
@@ -306,8 +301,7 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during autonomous
 	 */
 	public void autonomousPeriodic() {
-		// TODO autonomous periodic
-		robotState = 0;
+		// LABEL autonomous periodic
 
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
@@ -461,9 +455,8 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		// TODO teleop periodic
+		// LABEL teleop periodic
 		autonomous = false;
-		robotState = 1;
 
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
@@ -576,7 +569,7 @@ public class Robot extends IterativeRobot {
 			FWD = commands.getY();
 			STR = commands.getX();
 		} else {
-			//TODO this may change depending on robot
+			// TODO this may change depending on robot
 			FWD *= -1;
 			STR *= -1;
 		}
@@ -621,7 +614,7 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during test mode
 	 */
 	public void testPeriodic() {
-		// TODO test
+		// LABEL test
 		LiveWindow.run();
 
 		double speed = (xbox1.RStickX() * 0.3);
