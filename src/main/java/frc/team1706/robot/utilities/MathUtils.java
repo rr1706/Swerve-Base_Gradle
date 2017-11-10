@@ -32,9 +32,8 @@ public class MathUtils {
 	}
 
 	public static double getDelta(double num1, double num2) {
-		double delta = num1 - num2;
+		return num1 - num2;
 
-		return delta;
 	}
 
 	public static double reverseErrorDirection(double error) {
