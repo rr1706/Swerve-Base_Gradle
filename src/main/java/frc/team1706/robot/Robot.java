@@ -263,10 +263,14 @@ public class Robot extends IterativeRobot {
 
 		autonomousChoice = autoChooser.getSelected();
 
-		String choice = null;
+		String choice;
 
 		if (autonomousChoice == 1) {
 			choice = "/home/lvuser/FILENAME.csv";
+		} else if (autonomousChoice == 2) {
+			choice = "/home/lvuser/FILENAME2.csv";
+		} else {
+			choice = "/home/lvuser/Stopped.csv";
 		}
 
 		SmartDashboard.putString("Autonomous File", choice);
