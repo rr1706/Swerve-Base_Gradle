@@ -1,1 +1,1 @@
-powershell.exe -noexit -command ./gradlew build;./gradlew deploy
+powershell.exe -noexit -command ./gradlew build;./gradlew deploy;exit
