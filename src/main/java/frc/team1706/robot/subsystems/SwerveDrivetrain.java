@@ -16,11 +16,6 @@ import java.util.Properties;
  * @author team1706
  */
 public class SwerveDrivetrain {
-	int pwmPortT;
-	int pwmPortR;
-	int analogPort;
-	int encoderPort1;
-	int encoderPort2;
 	private static String[] FRPorts;
 	private static String[] FLPorts;
 	private static String[] BLPorts;
