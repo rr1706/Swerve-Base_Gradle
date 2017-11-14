@@ -48,7 +48,7 @@ public class IMU {
 		boolean collisionDetected = false;
 
 		currentAccelX = ahrs.getWorldLinearAccelX();
-		jerkX = currentAccelX - currentAccelY;
+		jerkX = currentAccelX - previousAccelX;
 		previousAccelX = currentAccelX;
 		currentAccelY = ahrs.getWorldLinearAccelY();
 		jerkY = currentAccelY - previousAccelY;
