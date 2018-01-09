@@ -51,10 +51,17 @@ public class SwerveModule {
 
 		translationMotor = new Talon(pwmPortT);
 		rotationMotor = new TalonSRX(pwmPortR);
+
+		rotationMotor.setSelectedSensorPosition(rotationMotor.getSelectedSensorPosition(0) & 0xFFF, 0, 0);
+
 		rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0);
-//		rotationMotor.setPID(27.5, 0.0, 0.0); // TODO Tune PID
-//		rotationMotor.setAllowableClosedLoopErr(2);
-		rotationMotor.setInverted(true);
+
+		rotationMotor.config_kF(0, 0.0, 0);
+		rotationMotor.config_kP(0, 3.0, 0);
+		rotationMotor.config_kI(0, 0.0, 0);
+		rotationMotor.config_kD(0, 0.0, 0);
+		rotationMotor.configAllowableClosedloopError(0, 2, 0);
+		rotationMotor.setSensorPhase(true);
 //		rotationMotor.enable();
 
 		encoder = new Encoder(encoderPort1, encoderPort2, false, Encoder.EncodingType.k4X);
@@ -116,6 +123,11 @@ public class SwerveModule {
 
 		if (Math.abs(this.speedCommand) >= 0.1) {
 			rotationMotor.set(ControlMode.Position, z);
+//			System.out.println("This is running");
+		}
+
+		if (id == 1) {
+			System.out.println(z);
 		}
 
 		rightDelta = delta * Math.sin(MathUtils.degToRad(rac));
