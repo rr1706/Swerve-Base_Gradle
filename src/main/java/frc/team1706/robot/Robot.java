@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import frc.team1706.robot.subsystems.IMU;
 import frc.team1706.robot.subsystems.JetsonServer;
-import frc.team1706.robot.subsystems.PowerPanel;
+//import frc.team1706.robot.subsystems.PowerPanel;
 import frc.team1706.robot.subsystems.SwerveDrivetrain;
 import frc.team1706.robot.subsystems.SwerveDrivetrain.WheelType;
 import frc.team1706.robot.subsystems.Time;
@@ -473,12 +473,12 @@ public class Robot extends IterativeRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setOffset(SmartDashboard.getNumber("BR offset: ", 0));
 
 //		log.newLine();
-		log.newPowerLine();
-
-		log.addPower("BR", PowerPanel.j());
-		log.addPower("BL", PowerPanel.k());
-		log.addPower("FL", PowerPanel.f());
-		log.addPower("FR", PowerPanel.h());
+//		log.newPowerLine();
+//
+//		log.addPower("BR", PowerPanel.j());
+//		log.addPower("BL", PowerPanel.k());
+//		log.addPower("FL", PowerPanel.f());
+//		log.addPower("FR", PowerPanel.h());
 
 		SmartDashboard.putNumber("Distance", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
 
