@@ -1,11 +1,17 @@
 package frc.team1706.robot.subsystems;
 
+<<<<<<< HEAD
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 //import com.ctre.CANTalon;
 //import com.ctre.CANTalon.FeedbackDevice;
 //import com.ctre.CANTalon.TalonControlMode;
+=======
+import com.ctre.CANTalon;
+import com.ctre.CANTalon.FeedbackDevice;
+import com.ctre.CANTalon.TalonControlMode;
+>>>>>>> parent of a8c58cd... Update to 2018
 
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import edu.wpi.first.wpilibj.Encoder;
@@ -30,7 +36,7 @@ public class SwerveModule {
 	private double rightSum = 0;
 	private double forwardSum = 0;
 	private Talon translationMotor;
-	private TalonSRX rotationMotor;
+	private CANTalon rotationMotor;
 	private Encoder encoder;
 	private boolean wheelReversed;
 	private boolean movingRight;
@@ -53,6 +59,7 @@ public class SwerveModule {
 		super();
 
 		translationMotor = new Talon(pwmPortT);
+<<<<<<< HEAD
 		rotationMotor = new TalonSRX(pwmPortR);
 
 		rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog, 0, 0);
@@ -64,6 +71,15 @@ public class SwerveModule {
 		rotationMotor.configAllowableClosedloopError(0, 2, 0);
 		rotationMotor.setSensorPhase(true);
 //		rotationMotor.enable();
+=======
+		rotationMotor = new CANTalon(pwmPortR);
+		rotationMotor.setFeedbackDevice(FeedbackDevice.AnalogEncoder);
+		rotationMotor.changeControlMode(TalonControlMode.Position);
+		rotationMotor.setPID(27.5, 0.0, 0.0); // TODO Tune PID
+		rotationMotor.setAllowableClosedLoopErr(2);
+		rotationMotor.reverseSensor(true);
+		rotationMotor.enable();
+>>>>>>> parent of a8c58cd... Update to 2018
 
 		encoder = new Encoder(encoderPort1, encoderPort2, false, Encoder.EncodingType.k4X);
 		encoder.setDistancePerPulse(0.04);
@@ -71,9 +87,11 @@ public class SwerveModule {
 
 	void drive() {
 
+		rotationMotor.changeControlMode(TalonControlMode.Position);
+
 		distance = encoder.getDistance();
 
-		angleError = rotationMotor.getClosedLoopError(0);
+		angleError = rotationMotor.getError();
 
 		/*
 		 * If the error is greater than 90 then change direction by 180
@@ -92,12 +110,16 @@ public class SwerveModule {
 			angleError = 0;
 		}
 
+<<<<<<< HEAD
 		i = Math.floor(rotationMotor.getSelectedSensorPosition(0) / 1024);
 //		System.out.println(Math.floor(5.5));
 //		System.out.println(Math.floorDiv(rotationMotor.getSelectedSensorPosition(0), 1024));
 //		System.out.println(i);
+=======
+		i = Math.floor(rotationMotor.getAnalogInPosition() / 1024);
+>>>>>>> parent of a8c58cd... Update to 2018
 		j = this.angleCommand + i * 1024;
-		k = j - rotationMotor.getSelectedSensorPosition(0);
+		k = j - rotationMotor.getAnalogInPosition();
 
 		if (Math.abs(k) > 512) {
 			z = -(j - Math.signum(k) * 1024);
@@ -105,6 +127,7 @@ public class SwerveModule {
 			z = -j;
 		}
 
+<<<<<<< HEAD
 //		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) > 256) {
 //			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) * 512;
 //			wheelReversed = true;
@@ -113,6 +136,16 @@ public class SwerveModule {
 //		} else {
 //			wheelReversed = false;
 //		}
+=======
+		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) > 256) {
+			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) * 512;
+			wheelReversed = true;
+			this.speedCommand *= -1;
+
+		} else {
+			wheelReversed = false;
+		}
+>>>>>>> parent of a8c58cd... Update to 2018
 		
 		/*
 		 * If wheel direction has to change more than 45 degrees
@@ -126,6 +159,7 @@ public class SwerveModule {
 			translationMotor.set(0.0);
 		}
 
+<<<<<<< HEAD
 		if (Math.abs(this.speedCommand) >= 0.1 && id == 1) {
 //			rotationMotor.set(ControlMode.Position, SmartDashboard.getNumber("2018 SRX Test", 0));
 //			System.out.println(SmartDashboard.getNumber("2018 SRX Test", 0));
@@ -144,6 +178,10 @@ public class SwerveModule {
 			SmartDashboard.putNumber("j", j);
 			SmartDashboard.putNumber("k", k);
 			SmartDashboard.putNumber("z", z);
+=======
+		if (Math.abs(this.speedCommand) >= 0.1) {
+			rotationMotor.setSetpoint(z);
+>>>>>>> parent of a8c58cd... Update to 2018
 		}
 
 		rightDelta = delta * Math.sin(MathUtils.degToRad(rac));
@@ -166,10 +204,16 @@ public class SwerveModule {
 
 	// for testing wiring only
 	public void setDirectRotateCommand(double command) {
+<<<<<<< HEAD
 		rotationMotor.set(ControlMode.PercentOutput, -command);
 		if (id == 1) {
 			System.out.println(rotationMotor.getSelectedSensorPosition(0));
 		}	}
+=======
+		rotationMotor.changeControlMode(TalonControlMode.PercentVbus);
+		rotationMotor.set(-command);
+	}
+>>>>>>> parent of a8c58cd... Update to 2018
 
 	// for testing wiring only
 	public void setDirectTranslateCommand(double command) {
