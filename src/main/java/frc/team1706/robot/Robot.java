@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import frc.team1706.robot.subsystems.IMU;
 import frc.team1706.robot.subsystems.JetsonServer;
-//import frc.team1706.robot.subsystems.PowerPanel;
+import frc.team1706.robot.subsystems.PowerPanel;
 import frc.team1706.robot.subsystems.SwerveDrivetrain;
 import frc.team1706.robot.subsystems.SwerveDrivetrain.WheelType;
 import frc.team1706.robot.subsystems.Time;
@@ -475,10 +475,10 @@ public class Robot extends IterativeRobot {
 //		log.newLine();
 		log.newPowerLine();
 
-//		log.addPower("BR", PowerPanel.j());
-//		log.addPower("BL", PowerPanel.k());
-//		log.addPower("FL", PowerPanel.f());
-//		log.addPower("FR", PowerPanel.h());
+		log.addPower("BR", PowerPanel.j());
+		log.addPower("BL", PowerPanel.k());
+		log.addPower("FL", PowerPanel.f());
+		log.addPower("FR", PowerPanel.h());
 
 		SmartDashboard.putNumber("Distance", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
 
@@ -621,7 +621,7 @@ public class Robot extends IterativeRobot {
 	 */
 	public void testPeriodic() {
 		// LABEL test
-//		LiveWindow.run();
+		LiveWindow.run();
 
 		double speed = (xbox1.RStickX() * 0.3);
 
