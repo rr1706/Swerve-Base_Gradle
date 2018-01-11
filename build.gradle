@@ -23,6 +23,25 @@ deploy {
     }
 }
 
+// Set the versions of libraries to use. This is calculated for you based
+// off known-stable versions for the current year, but you can modify
+// them here if you so desire. This block is not required.
+wpi {
+    wpilibVersion = '...'
+    ntcoreVersion = '...'
+    opencvVersion = '...'
+    cscoreVersion = '...'
+    wpiutilVersion = '...'
+
+    ctreVersion = '4.4.1.14'
+    navxVersion = '...'
+
+    smartDashboardVersion = '...'
+    shuffleboardVersion = '...'
+
+    toolchainVersion = '...'
+}
+
 // Defining my dependencies. In this case, WPILib (+ friends), CTRE Toolsuite (Talon SRX)
 // and NavX.
 dependencies {

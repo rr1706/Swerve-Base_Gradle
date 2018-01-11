@@ -218,6 +218,8 @@ public class Robot extends IterativeRobot {
 
 		SwerveDrivetrain.loadPorts();
 
+		SmartDashboard.putNumber("2018 SRX Test", 0);
+
 		SmartDashboard.putNumber("CompensateP", 0.02);
 		SmartDashboard.putNumber("CompensateI", 0.0);
 		SmartDashboard.putNumber("CompensateD", 0.0);
