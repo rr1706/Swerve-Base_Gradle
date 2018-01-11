@@ -21,3 +21,7 @@ gradle-app.setting
 *.jar
 *.properties
 *.xml___jb_tmp___
+.idea/compiler.xml
+*.class
+*.xml
+*.jar
