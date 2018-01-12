@@ -25,3 +25,5 @@ gradle-app.setting
 *.class
 *.xml
 *.jar
+*.class
+*.jar
