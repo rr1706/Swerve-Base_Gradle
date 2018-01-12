@@ -95,32 +95,31 @@ public class SwerveModule {
 		k = j - rotationMotor.getSelectedSensorPosition(0);
 
 		/*
-		 * If the error is greater than 512, have wheel go to next
+		 * If the error is greater than 512 units (180 degrees), have wheel go to next
 		 * cycle so it doesn't jump back to beginning of current cycle
 		 */
-		if (Math.abs(k) > 512) {
-			z = -(j - Math.signum(k) * 1024);
-		} else {
+//		if (Math.abs(k) > 512) {
+//			z = -(j - Math.signum(k) * 1024);
+//		} else {
 			z = -j;
-		}
+//		}
 
 		/*
-		 * If the wheel has to move over 45 degrees, go opposite to command and reverse translation
-		 * The final path is shorter than moving over 45 degrees
+		 * If the wheel has to move over 256 units (45 degrees)
+		 * go opposite to command and reverse translation
 		 */
-		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) > 256) {
-			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) * 512;
-			wheelReversed = true;
-			this.speedCommand *= -1;
-
-		} else {
-			wheelReversed = false;
-		}
+//		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) > 256) {
+//			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) * 512;
+//			wheelReversed = true;
+//			this.speedCommand *= -1;
+//
+//		} else {
+//			wheelReversed = false;
+//		}
 
 		/*
-		 * If wheel direction has to change more than 45 degrees
-		 * then set wheel speed command to 0 while wheel is
-		 * turning.
+		 * If wheel direction has to change more than 128 units (22.5 degrees)
+		 * then set wheel speed command to 0 while wheel is turning.
 		 */
 		if (Math.abs(angleError) < 128 && id == 1) {
 			translationMotor.set(this.speedCommand);
@@ -140,7 +139,7 @@ public class SwerveModule {
 			SmartDashboard.putNumber("Motor Angle", rotationMotor.getSelectedSensorPosition(0));
 			SmartDashboard.putNumber("Angle Command", z);
 
-			System.out.println(i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0));
+			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0));
 		}
 
 		rightDelta = delta * Math.sin(MathUtils.degToRad(rac));
