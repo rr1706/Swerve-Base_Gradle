@@ -92,30 +92,30 @@ public class SwerveModule {
 		//Set command + rotations (wrap command)
 		j = this.angleCommand + i * 1024;
 		//Set wrapped command - current position (error)
-		k = j - rotationMotor.getSelectedSensorPosition(0);
+		k = -j - rotationMotor.getSelectedSensorPosition(0);
 
 		/*
 		 * If the error is greater than 512 units (180 degrees), have wheel go to next
 		 * cycle so it doesn't jump back to beginning of current cycle
 		 */
-//		if (Math.abs(k) > 512) {
-//			z = -(j - Math.signum(k) * 1024);
-//		} else {
+		if (Math.abs(k) > 512) {
+			z = -(j - Math.signum(k) * 1024);
+		} else {
 			z = -j;
-//		}
+		}
 
 		/*
 		 * If the wheel has to move over 256 units (45 degrees)
 		 * go opposite to command and reverse translation
 		 */
-//		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) > 256) {
-//			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSelectedSensorPosition(0))) * 512;
-//			wheelReversed = true;
-//			this.speedCommand *= -1;
-//
-//		} else {
-//			wheelReversed = false;
-//		}
+		if (Math.abs(MathUtils.getDelta(-z, -rotationMotor.getSelectedSensorPosition(0))) > 256) {
+			z += Math.signum(MathUtils.getDelta(-z, -rotationMotor.getSelectedSensorPosition(0))) * 512;
+			wheelReversed = true;
+			this.speedCommand *= -1;
+
+		} else {
+			wheelReversed = false;
+		}
 
 		/*
 		 * If wheel direction has to change more than 128 units (22.5 degrees)
