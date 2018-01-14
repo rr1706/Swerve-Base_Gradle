@@ -27,7 +27,7 @@ deploy {
 // and NavX.
 dependencies {
     compile wpilib()
-    compile ctre()
+    compile files('C:\\Users\\Programming\\wpilib\\user\\java\\lib\\CTRLib.jar')
     compile navx()
     compile openrio.powerup.matchData()
 }
