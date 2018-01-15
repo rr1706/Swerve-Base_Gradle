@@ -1,6 +1,8 @@
 package frc.team1706.robot.subsystems;
 
-import com.ctre.CANTalon;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
@@ -24,7 +26,7 @@ public class SwerveModule {
 	private double rightSum = 0;
 	private double forwardSum = 0;
 	private Talon translationMotor;
-	private CANTalon rotationMotor;
+	private TalonSRX rotationMotor;
 	private Encoder encoder;
 	private boolean wheelReversed;
 	private boolean movingRight;
@@ -47,13 +49,14 @@ public class SwerveModule {
 		super();
 
 		translationMotor = new Talon(pwmPortT);
-		rotationMotor = new CANTalon(pwmPortR);
-		rotationMotor.setFeedbackDevice(CANTalon.FeedbackDevice.AnalogEncoder);
-		rotationMotor.changeControlMode(CANTalon.TalonControlMode.Position);
-		rotationMotor.setPID(27.5, 0.0, 0.0);//TODO Tune PID
-		rotationMotor.setAllowableClosedLoopErr(2);
-		rotationMotor.reverseSensor(true);
-		rotationMotor.enable();
+		rotationMotor = new TalonSRX(pwmPortR);
+		rotationMotor. configSelectedFeedbackSensor( FeedbackDevice.Analog, 0, 0);
+		rotationMotor.config_kF(0, 0.0, 0);
+		rotationMotor.config_kP(0, 27.5, 0);
+		rotationMotor.config_kI(0, 0.0, 0);
+		rotationMotor.config_kD(0, 0.0, 0);
+		rotationMotor. configAllowableClosedloopError (0, 2, 0);
+		rotationMotor.setSensorPhase(true);
 
 		encoder = new Encoder(encoderPort1, encoderPort2, false, Encoder.EncodingType.k4X);
 		encoder.setDistancePerPulse(0.04);
@@ -63,7 +66,7 @@ public class SwerveModule {
 
 		distance = encoder.getDistance();
 
-		angleError = rotationMotor.getClosedLoopError();
+		angleError = rotationMotor.getClosedLoopError(0);
 
 		/*
 		 * If the error is greater than 90 then change direction by 180
@@ -85,11 +88,11 @@ public class SwerveModule {
 
 
 		//Count rotation cycles of wheel
-		i = Math.floor(rotationMotor.getAnalogInPosition() / 1024);
+		i = Math.floor(rotationMotor.getSensorCollection().getAnalogIn() / 1024);
 		//Set command + rotations (wrap command)
 		j = this.angleCommand + i * 1024;
 		//Set wrapped command - current position (error)
-		k = j - rotationMotor.getAnalogInPosition();
+		k = j - rotationMotor.getSensorCollection().getAnalogIn();
 
 		/*
 		 * If the error is greater than 512 units (180 degrees), have wheel go to next
@@ -105,8 +108,8 @@ public class SwerveModule {
 		 * If the wheel has to move over 256 units (45 degrees)
 		 * go opposite to command and reverse translation
 		 */
-		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) > 256) {
-			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getAnalogInPosition())) * 512;
+		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSensorCollection().getAnalogIn())) > 256) {
+			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSensorCollection().getAnalogIn())) * 512;
 			wheelReversed = true;
 			this.speedCommand *= -1;
 
@@ -125,8 +128,7 @@ public class SwerveModule {
 		}
 
 		if (Math.abs(this.speedCommand) >= 0.1) {
-			rotationMotor.changeControlMode(CANTalon.TalonControlMode.Position);
-			rotationMotor.set(z);
+			rotationMotor.set(ControlMode.Position, z);
 
 		}
 
@@ -158,8 +160,7 @@ public class SwerveModule {
 
 	// for testing wiring only
 	public void setDirectRotateCommand(double command) {
-		rotationMotor.changeControlMode(CANTalon.TalonControlMode.PercentVbus);
-		rotationMotor.set(-command);
+		rotationMotor.set(ControlMode.PercentOutput, -command);
 	}
 
 	// for testing wiring only
