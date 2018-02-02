@@ -52,7 +52,7 @@ public class SwerveModule {
 		rotationMotor = new TalonSRX(pwmPortR);
 		rotationMotor. configSelectedFeedbackSensor( FeedbackDevice.Analog, 0, 0);
 		rotationMotor.config_kF(0, 0.0, 0);
-		rotationMotor.config_kP(0, 27.5, 0);
+		rotationMotor.config_kP(0, 22, 0);
 		rotationMotor.config_kI(0, 0.0, 0);
 		rotationMotor.config_kD(0, 0.0, 0);
 		rotationMotor. configAllowableClosedloopError (0, 2, 0);
@@ -135,7 +135,11 @@ public class SwerveModule {
 		if (id == 1) {
 //			SmartDashboard.putNumber("Error", rotationMotor.getClosedLoopError(0));
 //			SmartDashboard.putNumber("Motor Angle", rotationMotor.getSelectedSensorPosition(0));
-//			SmartDashboard.putNumber("Angle Command", z);
+//			SmartDashboard.putNumber("Joystick Command", this.angleCommand);
+//			SmartDashboard.putNumber("Wheel Cycle", i);
+//			SmartDashboard.putNumber("Pre Angle Command", j);
+//			SmartDashboard.putNumber("Error", k);
+//			SmartDashboard.putNumber("Angle Command", -z);
 //
 //			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0)+","+SmartDashboard.getNumber("2018 SRX Test", 0));
 		}
