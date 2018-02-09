@@ -243,9 +243,10 @@ public class Robot extends IterativeRobot {
 
 		// Connect to jetson
 		try {
-			jet = new JetsonServer((short) 5800);
+			jet = new JetsonServer((short) 5800, (short) 5801);
 			t = new Thread(jet);
 			t.start();
+			jet.setDisabled();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -273,6 +274,7 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousInit() {
 		// LABEL autonomous init
+		jet.setAuto(); // this line is important because it does clock synchronization
 
 		String gameData = m_ds.getGameSpecificMessage();
 		char switchSide = gameData.charAt(0);
@@ -520,6 +522,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	public void teleopInit() {
+		jet.startTeleop();
 
 		log.start();
 
@@ -692,6 +695,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	public void disabledInit() {
+		jet.setDisabled();
 		autoMove = 0;
 
 		// When robot is turned on, disabledInit is called once
