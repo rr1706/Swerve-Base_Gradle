@@ -193,12 +193,12 @@ public class Robot extends IterativeRobot {
 		SwerveCompensate.setInput(imu.getAngle());
 		SwerveCompensate.setSetpoint(angle);
 
-		// FIXME try having move to next step immediately, like old code
+		// FIXME try having move to next step immediately, like old code or just use this part for keeping straight and make new for only rotation
 		SwerveCompensate.setTolerance(7);
 		if (!SwerveCompensate.onTarget()) {
-			SwerveCompensate.setPID(0.005, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
+			SwerveCompensate.setPID(0.013, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
 		} else {
-			SwerveCompensate.setPID(0.04, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
+			SwerveCompensate.setPID(0.015, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
 		}
 
 		robotRotation = SwerveCompensate.performPID();
@@ -352,7 +352,7 @@ public class Robot extends IterativeRobot {
 				int i = 0;
 				for (String part : parts) {
 					linel[i++] = Double.parseDouble(part);
-					System.out.println(Double.parseDouble(part));
+//					System.out.println(Double.parseDouble(part));
 				}
 				commands[l++] = linel;
 			}
@@ -399,7 +399,7 @@ public class Robot extends IterativeRobot {
 
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
-				 * 4 = distance(in), 6 = moonSTR, 7moonRCW, 8moonAngle, 10 = time out(seconds), 11 = check for collision,
+				 * 4 = distance(in), 6 = moonSTR, 7 = moonRCW, 8 = moonAngle, 10 = time out(seconds), 11 = check for collision,
 				 * 12 = imu offset, create new
 				 */
 				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
@@ -660,8 +660,8 @@ public class Robot extends IterativeRobot {
 
 		if (xbox1.LStickButton()) {
 			FWD = 0.0;
-			STR = 0.7;
-			RCW = -0.21;
+			STR = -0.85;
+			RCW = 0.25;
 		}
 
 		if (xbox1.RStickButton()) {
