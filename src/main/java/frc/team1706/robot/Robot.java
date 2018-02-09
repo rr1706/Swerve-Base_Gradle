@@ -522,7 +522,7 @@ public class Robot extends IterativeRobot {
 	}
 
 	public void teleopInit() {
-		jet.startTeleop();
+//		jet.startTeleop();
 
 		log.start();
 
