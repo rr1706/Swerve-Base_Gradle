@@ -172,11 +172,11 @@ public class SwerveModule {
 		translationMotor.set(command);
 	}
 
-	void setSpeedCommand(double speedCommand) {
+	public void setSpeedCommand(double speedCommand) {
 		this.speedCommand = speedCommand;
 	}
 
-	void setAngleCommand(double angleCommand) {
+	public void setAngleCommand(double angleCommand) {
 		this.angleCommand = angleCommand;
 	}
 

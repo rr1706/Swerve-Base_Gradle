@@ -27,3 +27,6 @@ gradle-app.setting
 *.jar
 *.class
 *.jar
+*.java___jb_tmp___
+*.iml
+*.xml

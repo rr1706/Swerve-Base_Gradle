@@ -61,10 +61,19 @@ public class Robot extends IterativeRobot {
 	private double rSpeed;
 	private double PIDSpeed;
 	private double initialPitch;
-	private double previousDistance;
-	private double currentDistance;
+	private double previousDistanceFR;
+	private double currentDistanceFR;
+	private double previousDistanceFL;
+	private double currentDistanceFL;
+	private double previousDistanceBL;
+	private double currentDistanceBL;
+	private double previousDistanceBR;
+	private double currentDistanceBR;
 	private double currentTime = 0;
-	private boolean driveDone;
+	private boolean FRDone;
+	private boolean FLDone;
+	private boolean BLDone;
+	private boolean BRDone;
 	private boolean turnDone;
 	private boolean timeDone;
 	private boolean collisionDone;
@@ -389,8 +398,15 @@ public class Robot extends IterativeRobot {
 				if (Time.get() > timeBase + SmartDashboard.getNumber("Autonomous Delay", 0)) {
 					autoMove = 1;
 				}
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
-				previousDistance = currentDistance;
+				currentDistanceFR = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
+				currentDistanceFL = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance();
+				currentDistanceBL = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
+				currentDistanceBR = SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getDistance();
+
+				previousDistanceFR = currentDistanceFR;
+				previousDistanceFL = currentDistanceFL;
+				previousDistanceBL = currentDistanceBL;
+				previousDistanceBR = currentDistanceBR;
 
 				break;
 
@@ -400,121 +416,60 @@ public class Robot extends IterativeRobot {
 				SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 				/*
-				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
-				 * 4 = distance(in), 6 = moonSTR, 7 = moonRCW, 8 = moonAngle, 10 = time out(seconds), 11 = check for collision,
-				 * 12 = imu offset, create new
+				 * 0, 1,  2 = FR Power, Angle, Dist
+				 * 3, 4,  5 = FL Power, Angle, Dist
+				 * 6, 7,  8 = BL Power, Angle, Dist
+				 * 9, 10, 11 = BR Power, Angle, Dist
 				 */
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
+				currentDistanceFR = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
+				currentDistanceFL = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance();
+				currentDistanceBL = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
+				currentDistanceBR = SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getDistance();
+
+				SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setSpeedCommand(commands[arrayIndex][0]);
+				SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setAngleCommand(commands[arrayIndex][1]);
+
+				SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setSpeedCommand(commands[arrayIndex][3]);
+				SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setAngleCommand(commands[arrayIndex][4]);
+
+				SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setSpeedCommand(commands[arrayIndex][6]);
+				SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setAngleCommand(commands[arrayIndex][7]);
+
+				SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setSpeedCommand(commands[arrayIndex][9]);
+				SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setAngleCommand(commands[arrayIndex][10]);
 
 				System.out.println(commands[arrayIndex][0]);
-
-				tSpeed = commands[arrayIndex][0];
-				rSpeed = commands[arrayIndex][1];
-
-				if (commands[arrayIndex][2] != -1) {
-					FWD = Math.cos(MathUtils.degToRad(commands[arrayIndex][2]));
-					STR = Math.sin(MathUtils.degToRad(commands[arrayIndex][2]));
-				} else {
-					FWD = 0;
-					STR = 0;
-				}
-
-				if (commands[arrayIndex][4] != -1) {
-					AutoTranslate.setInput(Math.abs(currentDistance - previousDistance));
-					AutoTranslate.setSetpoint(commands[arrayIndex][4]);
-					PIDSpeed = AutoTranslate.performPID();
-				}
-
 				SmartDashboard.putNumber("Array Index", arrayIndex);
 
-				Vector driveCommands;
-				driveCommands = MathUtils.convertOrientation(MathUtils.degToRad(imu.getAngle()), FWD, STR);
-				FWD = driveCommands.getY() * tSpeed * PIDSpeed;
-				STR = driveCommands.getX() * tSpeed * PIDSpeed;
-
-				autonomousAngle = commands[arrayIndex][3];
-
-				// FIXME
-				if (autonomousAngle != -1) {
-					autonomousAngle(autonomousAngle);
+				if ((Math.abs(currentDistanceFR - previousDistanceFR) >= commands[arrayIndex][2]) || commands[arrayIndex][2] == 0) {
+					FRDone = true;
+				}
+				if ((Math.abs(currentDistanceFL - previousDistanceFL) >= commands[arrayIndex][5]) || commands[arrayIndex][5] == 0) {
+					FLDone = true;
+				}
+				if ((Math.abs(currentDistanceBL - previousDistanceBL) >= commands[arrayIndex][8]) || commands[arrayIndex][8] == 0) {
+					BLDone = true;
+				}
+				if ((Math.abs(currentDistanceBR - previousDistanceBR) >= commands[arrayIndex][11]) || commands[arrayIndex][11] == 0) {
+					BRDone = true;
 				}
 
-				RCW *= rSpeed;
+				try {
+					imuOffset = commands[arrayIndex][12];
+				} catch (NullPointerException e) {}
 
-				if (((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) && commands[arrayIndex][6] == -2) {
-					driveDone = true;
-					STR = 0;
-					FWD = 0;
-				}
+//				if (robotBackwards) {
+//					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
+//				} else {
+//					driveTrain.drive(new Vector(STR, FWD), RCW);
+//				}
 
-				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
-				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
-
-				SwerveCompensate.setTolerance(1);
-				if (SwerveCompensate.onTarget() || commands[arrayIndex][3] == -1) {
-					turnDone = true;
-					RCW = 0;
-				}
-
-				if (Time.get() > timeBase + commands[arrayIndex][10] && commands[arrayIndex][10] > 0) {
-					timeDone = true;
-					collisionDone = true;
-					driveDone = true;
-					turnDone = true;
-				} else if (commands[arrayIndex][10] == 0) {
-					timeDone = true;
-				}
-
-				if (commands[arrayIndex][11] == 1) {
-					if (imu.collisionDetected()) {
-						collisionDone = true;
-						driveDone = true;
-						turnDone = true;
-						timeDone = true;
-					}
-				} else {
-					collisionDone = true;
-				}
-
-				imuOffset = commands[arrayIndex][12];
-
-				if (commands[arrayIndex][6] != -2) {
-					STR = commands[arrayIndex][6];
-					RCW = commands[arrayIndex][7];
-					if (commands[arrayIndex][8] >= imu.getAngle() - 5.0 && commands[arrayIndex][8] <= imu.getAngle() + 5.0) {
-						moonDone = true;
-						collisionDone = true;
-						driveDone = true;
-						turnDone = true;
-						timeDone = true;
-					}
-				} else {
-					moonDone = true;
-				}
-
-				SmartDashboard.putNumber("FWD", FWD);
-				SmartDashboard.putNumber("STR", STR);
-				SmartDashboard.putNumber("RCW", RCW);
-
-				if (robotBackwards) {
-					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
-				} else {
-					driveTrain.drive(new Vector(STR, FWD), RCW);
-				}
-
-//				System.out.println("Drive: " + driveDone);
-//				System.out.println("Turn: " + turnDone);
-//				System.out.println("Coll: " + collisionDone);
-//				System.out.println("Time: " + timeDone);
-
-				if (driveDone && turnDone && collisionDone && moonDone) {
+				if (FRDone && FLDone && BLDone && BRDone) {
 					arrayIndex++;
-					driveDone = false;
-					previousDistance = currentDistance;
-					turnDone = false;
-					timeDone = false;
-					collisionDone = false;
-					timeBase = Time.get();
+					previousDistanceFR = currentDistanceFR;
+					previousDistanceFL = currentDistanceFL;
+					previousDistanceBL = currentDistanceBL;
+					previousDistanceBR = currentDistanceBR;
 
 				}
 				break;
