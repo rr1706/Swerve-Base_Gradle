@@ -420,6 +420,7 @@ public class Robot extends IterativeRobot {
 				 * 3, 4,  5 = FL Power, Angle, Dist
 				 * 6, 7,  8 = BL Power, Angle, Dist
 				 * 9, 10, 11 = BR Power, Angle, Dist
+				 * 12 = Robot Heading
 				 */
 				currentDistanceFR = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
 				currentDistanceFL = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance();
