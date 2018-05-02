@@ -45,7 +45,7 @@ public class IMU {
 	}
 
 	public double getDistance() {
-		return Math.sqrt(Math.pow(ahrs.getDisplacementX(), 2) + Math.pow(ahrs.getDisplacementY(), 2));
+		return MathUtils.meterToInch(Math.sqrt(Math.pow(ahrs.getDisplacementX(), 2) + Math.pow(ahrs.getDisplacementY(), 2)));
 	}
 
 	public void resetDistance() {
