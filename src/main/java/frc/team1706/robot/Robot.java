@@ -421,6 +421,7 @@ public class Robot extends IterativeRobot {
 				 * 6, 7,  8 = BL Power, Angle, Dist
 				 * 9, 10, 11 = BR Power, Angle, Dist
 				 * 12 = Robot Heading
+				 * 13 = IMU Offset
 				 */
 				currentDistanceFR = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
 				currentDistanceFL = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance();
@@ -456,7 +457,7 @@ public class Robot extends IterativeRobot {
 				}
 
 				try {
-					imuOffset = commands[arrayIndex][12];
+					imuOffset = commands[arrayIndex][13];
 				} catch (NullPointerException e) {}
 
 //				if (robotBackwards) {
