@@ -53,9 +53,9 @@ public class Robot extends TimedRobot {
 	private double autonomousAngle;
 	private double tSpeed;
 	private double rSpeed;
-	private double PIDSpeed;
 	private double previousDistance;
 	private double currentDistance;
+	private boolean override;
 	private boolean driveDone;
 	private boolean turnDone;
 	private boolean timeDone;
@@ -63,6 +63,9 @@ public class Robot extends TimedRobot {
 	private boolean moonDone;
 	private double timeBase;
 	private boolean timeCheck;
+	private  double smoothArc;
+	private  double smoothRotate;
+	private double initialAngle;
 
 	private int dx = -1;
 
@@ -120,14 +123,14 @@ public class Robot extends TimedRobot {
 						(!autonomous)) { // If teleop
 
 			SwerveCompensate.setPID(0.015, 0.0, 0.0);
-			keepAngle = imu.getAngle();
+			keepAngle = IMU.getAngle();
 
 		} else {
 
 			SwerveCompensate.setPID(0.02, 0.0, 0.0);
 			SwerveCompensate.setTolerance(12);
 
-			SwerveCompensate.setInput(imu.getAngle());
+			SwerveCompensate.setInput(IMU.getAngle());
 			SwerveCompensate.setSetpoint(keepAngle);
 
 			if (!SwerveCompensate.onTarget()) {
@@ -168,24 +171,6 @@ public class Robot extends TimedRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setPosition(Vector.load(application.getProperty("back_right_pos", "0.0,0.0")));
 
 		robotBackwards = Boolean.parseBoolean(application.getProperty("robot_backwards", "false"));
-	}
-
-	private void autonomousAngle(double angle) {
-		// LABEL autonomous angle
-
-		SwerveCompensate.setInput(imu.getAngle());
-		SwerveCompensate.setSetpoint(angle);
-
-		SwerveCompensate.setTolerance(7);
-		if (!SwerveCompensate.onTarget()) {
-			SwerveCompensate.setPID(0.013, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
-		} else {
-			SwerveCompensate.setPID(0.015, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
-		}
-
-		robotRotation = SwerveCompensate.performPID();
-
-		RCW = (robotRotation);
 	}
 
 	/**
@@ -307,7 +292,7 @@ public class Robot extends TimedRobot {
 	public void autonomousPeriodic() {
 		// LABEL autonomous periodic
 
-		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+		SmartDashboard.putNumber("IMU Angle", IMU.getAngle());
 
 		if (timeCheck) {
 			timeBase = Time.get();
@@ -334,12 +319,18 @@ public class Robot extends TimedRobot {
 			case 1:
 
 				SmartDashboard.putNumber("Array Index", arrayIndex);
-				SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+				SmartDashboard.putNumber("IMU Angle", IMU.getAngle());
+				SmartDashboard.putNumber("Array Index", arrayIndex);
+				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
+				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
+				SmartDashboard.putNumber("FWD", FWD);
+				SmartDashboard.putNumber("STR", STR);
+				SmartDashboard.putNumber("RCW", RCW);
 
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
-				 * 4 = distance(in), 6 = moonSTR, 7 = moonRCW, 8 = moonAngle, 10 = time out(seconds), 11 = check for collision,
-				 * 12 = imu offset
+				 * 4 = distance(in), 10 = time out(seconds),
+				 * 12 = imu offset, 13 = smoothStart, 14 = smoothEnd, 15 = onlyRotate
 				 *
 				 */
 				//Note: use moonRCW to rotate robot
@@ -357,21 +348,27 @@ public class Robot extends TimedRobot {
 					STR = 0;
 				}
 
-				if (commands[arrayIndex][4] != -1) {
-					AutoTranslate.setInput(Math.abs(currentDistance - previousDistance));
-					AutoTranslate.setSetpoint(commands[arrayIndex][4]);
-					PIDSpeed = AutoTranslate.performPID();
+				if (commands[arrayIndex][13] <= 360.0 && commands[arrayIndex][13] >= -360.0) {
+					smoothArc = MathUtils.degToRad(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][13], commands[arrayIndex][14], Math.abs(currentDistance - previousDistance)));
+					FWD = Math.cos(smoothArc);
+					STR = Math.sin(smoothArc);
 				}
 
-				SmartDashboard.putNumber("Array Index", arrayIndex);
+				if (commands[arrayIndex][15] <= 360.0 && commands[arrayIndex][15] >= -360.0) {
+					smoothRotate = MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, 2.0, IMU.getAngle());
+					RCW = Math.signum(commands[arrayIndex][15]-initialAngle) * Math.pow(3.5, -smoothRotate);
+					if (Math.abs(IMU.getAngle() - commands[arrayIndex][15]) < 5.0) {
+						override = true;
+					}
+				} else {
+					autonomousAngle = commands[arrayIndex][3];
+					initialAngle = IMU.getAngle();
+				}
 
 				Vector driveCommands;
-				driveCommands = MathUtils.convertOrientation(MathUtils.degToRad(imu.getAngle()), FWD, STR);
-				FWD = driveCommands.getY() * tSpeed * PIDSpeed;
-				STR = driveCommands.getX() * tSpeed * PIDSpeed;
-
-				autonomousAngle = commands[arrayIndex][3];
-
+				driveCommands = MathUtils.convertOrientation(MathUtils.degToRad(IMU.getAngle()), FWD, STR);
+				FWD = driveCommands.getY() * tSpeed;
+				STR = driveCommands.getX() * tSpeed;
 				RCW *= rSpeed;
 
 				if (((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) && commands[arrayIndex][6] == -2) {
@@ -380,9 +377,6 @@ public class Robot extends TimedRobot {
 					FWD = 0;
 				}
 
-				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
-				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
-
 				SwerveCompensate.setTolerance(1);
 				if (SwerveCompensate.onTarget() || commands[arrayIndex][3] == -1) {
 					turnDone = true;
@@ -390,45 +384,12 @@ public class Robot extends TimedRobot {
 				}
 
 				if (Time.get() > timeBase + commands[arrayIndex][10] && commands[arrayIndex][10] > 0) {
-					timeDone = true;
-					collisionDone = true;
-					driveDone = true;
-					turnDone = true;
-					moonDone = true;
+					override = true;
 				} else if (commands[arrayIndex][10] == 0) {
 					timeDone = true;
 				}
 
-				if (commands[arrayIndex][11] == 1) {
-					if (imu.collisionDetected()) {
-						collisionDone = true;
-						driveDone = true;
-						turnDone = true;
-						timeDone = true;
-					}
-				} else {
-					collisionDone = true;
-				}
-
 				imuOffset = commands[arrayIndex][12];
-
-				if (commands[arrayIndex][6] != -2) {
-					STR = commands[arrayIndex][6];
-					RCW = commands[arrayIndex][7];
-					if (commands[arrayIndex][8] >= imu.getAngle() - 5.0 && commands[arrayIndex][8] <= imu.getAngle() + 5.0) {
-						moonDone = true;
-						collisionDone = true;
-						driveDone = true;
-						turnDone = true;
-						timeDone = true;
-					}
-				} else {
-					moonDone = true;
-				}
-
-				SmartDashboard.putNumber("FWD", FWD);
-				SmartDashboard.putNumber("STR", STR);
-				SmartDashboard.putNumber("RCW", RCW);
 
 				if (robotBackwards) {
 					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
@@ -436,13 +397,18 @@ public class Robot extends TimedRobot {
 					driveTrain.drive(new Vector(STR, FWD), RCW);
 				}
 
-				if (driveDone && turnDone && collisionDone && moonDone) {
+				if (override) {
+					driveDone = true;
+					turnDone = true;
+				}
+
+				if (driveDone && turnDone) {
 					arrayIndex++;
 					driveDone = false;
 					previousDistance = currentDistance;
 					turnDone = false;
 					timeDone = false;
-					collisionDone = false;
+					override = false;
 					timeBase = Time.get();
 
 				}
@@ -471,7 +437,7 @@ public class Robot extends TimedRobot {
 		// LABEL teleop periodic
 		autonomous = false;
 
-		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+		SmartDashboard.putNumber("IMU Angle", IMU.getAngle());
 
 		// calibration from smartdashboard
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(SmartDashboard.getNumber("FR offset: ", 0));
@@ -536,9 +502,9 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("FWD", FWD);
 		SmartDashboard.putNumber("STR", STR);
 		SmartDashboard.putNumber("RCW", RCW);
-		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+		SmartDashboard.putNumber("IMU Angle", IMU.getAngle());
 
-		double headingDeg = imu.getAngle();
+		double headingDeg = IMU.getAngle();
 		double headingRad = MathUtils.degToRad(headingDeg);
 
 		currentOrientedButton = xbox1.A();
