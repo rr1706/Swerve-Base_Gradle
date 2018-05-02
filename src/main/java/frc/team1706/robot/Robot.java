@@ -9,20 +9,13 @@ import java.util.List;
 import java.util.Properties;
 
 import edu.wpi.first.wpilibj.AnalogInput;
-import frc.team1706.robot.subsystems.IMU;
-import frc.team1706.robot.subsystems.JetsonServer;
-//import frc.team1706.robot.subsystems.PowerPanel;
-import frc.team1706.robot.subsystems.SwerveDrivetrain;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.TimedRobot;
+import frc.team1706.robot.subsystems.*;
 import frc.team1706.robot.subsystems.SwerveDrivetrain.WheelType;
-import frc.team1706.robot.subsystems.Time;
-import frc.team1706.robot.subsystems.XboxController;
-import frc.team1706.robot.utilities.MathUtils;
-import frc.team1706.robot.utilities.PIDController;
-import frc.team1706.robot.utilities.Vector;
+import frc.team1706.robot.utilities.*;
 import frc.team1706.robot.RRLogger;
 
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -31,16 +24,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * documentation. If you change the name of this class or the package after creating this project, you must also update the manifest file in the
  * resource directory.
  */
-public class Robot extends IterativeRobot {
+public class Robot extends TimedRobot {
 
 	private SendableChooser<Integer> autoChooser;
 
-//	private Compressor compressor;
+	private Compressor compressor;
 
-	private XboxController xbox1 = new XboxController(0);
+	public static XboxController xbox1 = new XboxController(0);
+	public static XboxController xbox2 = new XboxController(1);
+//	private static XboxController endbox = new XboxController(2);
 
 	private int autonomousChoice;
-	private JetsonServer jet;
+//	private JetsonServer jet;
 	private Thread t;
 	private SwerveDrivetrain driveTrain;
 	private IMU imu;
@@ -55,22 +50,17 @@ public class Robot extends IterativeRobot {
 	private double[][] commands;
 	private int arrayIndex = -1;
 	private int autoMove = 0;
-	private double time = 0;
 	private double autonomousAngle;
 	private double tSpeed;
 	private double rSpeed;
 	private double PIDSpeed;
-	private double initialPitch;
 	private double previousDistance;
 	private double currentDistance;
-	private double currentTime = 0;
 	private boolean driveDone;
 	private boolean turnDone;
 	private boolean timeDone;
 	private boolean collisionDone;
 	private boolean moonDone;
-	private double offsetDeg;
-	private double prevOffset = 0;
 	private double timeBase;
 	private boolean timeCheck;
 
@@ -89,18 +79,9 @@ public class Robot extends IterativeRobot {
 
 	private boolean autonomous;
 
-	private double prevVoltTime = 0;
-	private double currentVoltTime = 0;
-
 	private boolean fieldOriented = true; // start on field orientation
 	private boolean previousOrientedButton = false;
 	private boolean currentOrientedButton = false;
-
-	private boolean slow = false;
-	private boolean previousSlowButton = false;
-	private boolean currentSlowButton = false;
-
-	private double command = 0;
 
 	private PIDController SwerveCompensate;
 	private PIDController AutoTranslate;
@@ -114,7 +95,8 @@ public class Robot extends IterativeRobot {
 	private Properties application = new Properties();
 	private File offsets = new File("/home/lvuser/SWERVE_OFFSET.txt");
 
-	AnalogInput test = new AnalogInput(0);
+	private boolean rumble = false;
+	private int rumbleTime = 0;
 
 	private void keepAngle() {
 		// LABEL keepAngle
@@ -125,6 +107,7 @@ public class Robot extends IterativeRobot {
 			keepAngle = xbox1.DPad();
 		}
 
+		//TODO put lead somewhere
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
 		lead = RCW * leadNum;
 
@@ -167,7 +150,7 @@ public class Robot extends IterativeRobot {
 	private void loadOffsets() {
 		// LABEL load offsets
 
-		// Set the offset of each wheel from a file on the roborio
+		// Set the offset of each wheapel from a file on the roborio
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(Double.parseDouble(application.getProperty("front_right_offset", "0")));
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setOffset(Double.parseDouble(application.getProperty("front_left_offset", "0")));
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setOffset(Double.parseDouble(application.getProperty("back_left_offset", "0")));
@@ -193,7 +176,6 @@ public class Robot extends IterativeRobot {
 		SwerveCompensate.setInput(imu.getAngle());
 		SwerveCompensate.setSetpoint(angle);
 
-		// FIXME try having move to next step immediately, like old code or just use this part for keeping straight and make new for only rotation
 		SwerveCompensate.setTolerance(7);
 		if (!SwerveCompensate.onTarget()) {
 			SwerveCompensate.setPID(0.013, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
@@ -211,8 +193,6 @@ public class Robot extends IterativeRobot {
 	 */
 	public void robotInit() {
 		// LABEL robot init
-//		compressor = new Compressor(0);
-
 		// Load the wheel offset file from the roborio
 		try {
 			FileInputStream in = new FileInputStream(offsets);
@@ -221,11 +201,23 @@ public class Robot extends IterativeRobot {
 			e.printStackTrace();
 		}
 
+		// Connect to jetson
+//		try {
+//			jet = new JetsonServer((short) 5800, (short) 5801);
+//			t = new Thread(jet);
+//			t.start();
+//			jet.setDisabled();
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		}
+
+		compressor = new Compressor(0);
+
 		Time.start();
 
 		SwerveDrivetrain.loadPorts();
-
-		SmartDashboard.putNumber("2018 SRX Test", 0);
+		driveTrain = new SwerveDrivetrain();
+		loadOffsets();
 
 		SmartDashboard.putNumber("CompensateP", 0.02);
 		SmartDashboard.putNumber("CompensateI", 0.0);
@@ -237,22 +229,10 @@ public class Robot extends IterativeRobot {
 		autoChooser.addDefault("Middle", 1);
 		autoChooser.addObject("Left", 2);
 		autoChooser.addObject("Right", 3);
+		autoChooser.addObject("Forward", 4);
 		SmartDashboard.putData("Autonomous Mode Chooser", autoChooser);
 
 		log = new RRLogger();
-
-		// Connect to jetson
-		try {
-			jet = new JetsonServer((short) 5800, (short) 5801);
-			t = new Thread(jet);
-			t.start();
-			jet.setDisabled();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-
-		driveTrain = new SwerveDrivetrain();
-		loadOffsets();
 
 		imu = new IMU();
 		imu.IMUInit();
@@ -274,71 +254,27 @@ public class Robot extends IterativeRobot {
 
 	public void autonomousInit() {
 		// LABEL autonomous init
-		jet.setAuto(); // this line is important because it does clock synchronization
-
-		String gameData = m_ds.getGameSpecificMessage();
-		char switchSide = gameData.charAt(0);
-		char scaleSide = gameData.charAt(1);
+//		jet.setAuto(); // this line is important because it does clock synchronization
 
 		timeCheck = true;
-		imu.reset();
+		imu.reset(0);
 
 		autonomousChoice = autoChooser.getSelected();
 
 		String choice;
 
 		if (autonomousChoice == 1) {
-			if (switchSide == 'L') {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/MidSwitchLScaleL.csv";
-				} else {
-					choice = "/home/lvuser/MidSwitchLScaleR.csv";
-				}
-			} else {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/MidSwitchRScaleL.csv";
-				} else {
-					choice = "/home/lvuser/MidSwitchRScaleR.csv";
-				}
-			}
-
+			choice = "/home/lvuser/Mid.csv";
 		} else if (autonomousChoice == 2) {
-			if (switchSide == 'L') {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/LeftSwitchLScaleL.csv";
-				} else {
-					choice = "/home/lvuser/LeftSwitchLScaleR.csv";
-				}
-			} else {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/LeftSwitchRScaleL.csv";
-				} else {
-					choice = "/home/lvuser/LeftSwitchRScaleR.csv";
-				}
-			}
-
+			choice = "/home/lvuser/Left.csv";
 		} else if (autonomousChoice == 3) {
-			if (switchSide == 'L') {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/RightSwitchLScaleL.csv";
-				} else {
-					choice = "/home/lvuser/RightSwitchLScaleR.csv";
-				}
-			} else {
-				if (scaleSide == 'L') {
-					choice = "/home/lvuser/RightSwitchRScaleL.csv";
-				} else {
-					choice = "/home/lvuser/RightSwitchRScaleR.csv";
-				}
-			}
-
+			choice = "/home/lvuser/Right.csv";
 		} else {
-			choice = "/home/lvuser/Stopped.csv";
+			choice = "/home/lvuser/Forward.csv";
 		}
 
 		SmartDashboard.putString("Autonomous File", choice);
 
-		time = 0;
 		arrayIndex = 0;
 
 		log.start();
@@ -389,10 +325,11 @@ public class Robot extends IterativeRobot {
 				if (Time.get() > timeBase + SmartDashboard.getNumber("Autonomous Delay", 0)) {
 					autoMove = 1;
 				}
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
+				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 				previousDistance = currentDistance;
 
 				break;
+
 
 			case 1:
 
@@ -402,11 +339,12 @@ public class Robot extends IterativeRobot {
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 6 = moonSTR, 7 = moonRCW, 8 = moonAngle, 10 = time out(seconds), 11 = check for collision,
-				 * 12 = imu offset, create new
+				 * 12 = imu offset
+				 *
 				 */
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance();
+				//Note: use moonRCW to rotate robot
 
-				System.out.println(commands[arrayIndex][0]);
+				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 
 				tSpeed = commands[arrayIndex][0];
 				rSpeed = commands[arrayIndex][1];
@@ -434,11 +372,6 @@ public class Robot extends IterativeRobot {
 
 				autonomousAngle = commands[arrayIndex][3];
 
-				// FIXME
-				if (autonomousAngle != -1) {
-					autonomousAngle(autonomousAngle);
-				}
-
 				RCW *= rSpeed;
 
 				if (((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) && commands[arrayIndex][6] == -2) {
@@ -461,6 +394,7 @@ public class Robot extends IterativeRobot {
 					collisionDone = true;
 					driveDone = true;
 					turnDone = true;
+					moonDone = true;
 				} else if (commands[arrayIndex][10] == 0) {
 					timeDone = true;
 				}
@@ -501,11 +435,6 @@ public class Robot extends IterativeRobot {
 				} else {
 					driveTrain.drive(new Vector(STR, FWD), RCW);
 				}
-
-//				System.out.println("Drive: " + driveDone);
-//				System.out.println("Turn: " + turnDone);
-//				System.out.println("Coll: " + collisionDone);
-//				System.out.println("Time: " + timeDone);
 
 				if (driveDone && turnDone && collisionDone && moonDone) {
 					arrayIndex++;
@@ -550,18 +479,16 @@ public class Robot extends IterativeRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setOffset(SmartDashboard.getNumber("BL offset: ", 0));
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setOffset(SmartDashboard.getNumber("BR offset: ", 0));
 
-//		log.newLine();
-//		log.newPowerLine();
-//
-//		log.addPower("BR", PowerPanel.j());
-//		log.addPower("BL", PowerPanel.k());
-//		log.addPower("FL", PowerPanel.f());
-//		log.addPower("FR", PowerPanel.h());
-
-		SmartDashboard.putNumber("Distance", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
+		SmartDashboard.putNumber("Distance", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance());
 
 		if (xbox1.Back()) {
-			imu.reset(); // robot should be perpendicular to field when pressed.
+			imu.reset(0); // robot should be perpendicular to field when pressed.
+		} else if (xbox1.Y()) {
+			imu.reset(180);
+		} else if (xbox1.X()) {
+			imu.reset(270);
+		} else if (xbox1.B()) {
+			imu.reset(90);
 		}
 
 		// forward command (-1.0 to 1.0)
@@ -570,43 +497,13 @@ public class Robot extends IterativeRobot {
 		// strafe command (-1.0 to 1.0)
 		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage();
 
-		// rotate clockwise command (-1.0 to 1.0)
-		// Limited to half speed because of wheel direction calculation issues when rotating quickly
-		RCW = xbox1.RStickX() * 0.5;
-
-		// Deadbands for joysticks
-		if (Math.abs(xbox1.LStickY()) <= 0.11) {
-			FWD = 0.0;
-		} else if (FWD > 1.0) {
-			FWD = 1.0;
-		} else if (FWD < -1.0) {
-			FWD = -1.0;
-		}
-
-		if (Math.abs(xbox1.LStickX()) <= 0.079) {
-			STR = 0.0;
-		} else if (STR > 1.0) {
-			STR = 1.0;
-		} else if (STR < -1.0) {
-			STR = -1.0;
-		}
-
-		if (Math.abs(xbox1.RStickX()) <= 0.016) {
-			RCW = 0.0;
-		}
-
-		// Let robot rotate at full speed if it is not translating
-		if (FWD + STR == 0.0) {
-			RCW = xbox1.RStickX();
-		}
-
 		// Increase the time it takes for the robot to accelerate
 		currentRampTime = Time.get();
 		if (FWD != 0.0 || STR != 0.0 || RCW != 0.0) {
 			if (wheelRamp < 1.0) {
 				rampRate = currentRampTime - prevRampTime;
 
-				//rampRate is x if this is set to a different equation later
+				// rampRate is x if this is set to a different equation
 				wheelRamp = rampRate;
 			} else {
 				wheelRamp = 1.0;
@@ -614,15 +511,26 @@ public class Robot extends IterativeRobot {
 
 			FWD *= wheelRamp;
 			STR *= wheelRamp;
-			RCW *= wheelRamp;
 		} else {
 			prevRampTime = currentRampTime;
 		}
 
 		if (imu.collisionDetected()) {
-			xbox1.rumble();
+			xbox1.rumbleRight(1.0);
+			xbox1.rumbleLeft(1.0);
 		} else {
 			xbox1.stopRumble();
+		}
+
+		if (rumble) {
+			xbox2.rumbleRight(0.5);
+			xbox2.rumbleLeft(0.5);
+			rumbleTime++;
+			if (rumbleTime > 20) {
+				rumble = false;
+			}
+		} else {
+			xbox2.stopRumble();
 		}
 
 		SmartDashboard.putNumber("FWD", FWD);
@@ -632,13 +540,6 @@ public class Robot extends IterativeRobot {
 
 		double headingDeg = imu.getAngle();
 		double headingRad = MathUtils.degToRad(headingDeg);
-
-		currentSlowButton = xbox1.X();
-		if (currentSlowButton && !previousSlowButton) {
-			slow = !slow;
-
-		}
-		previousSlowButton = currentSlowButton;
 
 		currentOrientedButton = xbox1.A();
 		if (currentOrientedButton && !previousOrientedButton) {
@@ -663,44 +564,57 @@ public class Robot extends IterativeRobot {
 
 		if (xbox1.LStickButton()) {
 			FWD = 0.0;
-			STR = -0.85;
-			RCW = 0.25;
+			STR = 0.0;
+			RCW = 0.0;
 		}
 
 		if (xbox1.RStickButton()) {
 			FWD = 0.0;
-			STR = 0.95/2;
-			RCW = -0.52/2;
+			STR = 0.0;
+			RCW = 0.0;
 		}
 
 		SmartDashboard.putNumber("FWD", FWD);
 		SmartDashboard.putNumber("STR", STR);
 		SmartDashboard.putNumber("RCW", RCW);
 
-		if (slow) {
-			STR /= 2;
-			FWD /= 2;
-		}
-
 		keepAngle();
+
+//		//Optional Control Scheme. Imagine Twinstick Shooter
+//		if (fieldOriented) {
+//			if (xbox1.RStickX() + xbox1.RStickY() != 0.0) {
+//				SwerveCompensate.setInput(IMU.getAngle());
+//				SwerveCompensate.setSetpoint(keepAngle = MathUtils.resolveDeg(MathUtils.radToDeg(Math.atan2(xbox1.RStickY(), xbox1.RStickX())) + 90.0));
+//				RCW = SwerveCompensate.performPID();
+//			} else {
+//				RCW = 0.0;
+//			}
+//		} else {
+
+		// rotate clockwise command (-1.0 to 1.0)
+		// Limited to half speed because of wheel direction calculation issues when rotating quickly
+		// Let robot rotate at full speed if it is not translating
+		if (FWD + STR == 0.0) {
+			RCW = xbox1.RStickX();
+		} else {
+			RCW = xbox1.RStickX() * 0.5;
+		}
+//		}
 
 		if (robotBackwards) {
 			driveTrain.drive(new Vector(-STR, -FWD), -RCW); // x = str, y = fwd, rotation = rcw
 		} else {
 			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		}
-
-		SmartDashboard.putNumber("Pot Test", test.getValue());
-
 	}
 
 	public void disabledInit() {
-		jet.setDisabled();
+//		jet.setDisabled();
 		autoMove = 0;
 
 		// When robot is turned on, disabledInit is called once
 		if (disabled < 1) {
-			System.out.println("Hello");
+			System.out.println("Hello, I am Otto");
 			disabled++;
 		} else {
 			System.out.println("Saving log file(s)");
@@ -715,15 +629,16 @@ public class Robot extends IterativeRobot {
 	 */
 	public void testPeriodic() {
 		// LABEL test
-//		LiveWindow.run();
-
 		double speed = (xbox1.RStickX() * 0.3);
 
 		if (xbox1.DPad() != -1) {
 			dx = xbox1.DPad();
 		}
 
-		System.out.println(xbox1.DPad());
+		System.out.println("FL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getAngle()));
+		System.out.println("BL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getAngle()));
+		System.out.println("BR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle()));
+		System.out.println("FR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle()));
 
 		// Move a single motor from the drivetrain depending on Dpad and right stick
 		if (dx == 0) {

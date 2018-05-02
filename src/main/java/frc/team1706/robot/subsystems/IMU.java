@@ -21,7 +21,7 @@ public class IMU {
 
 	private double collisionThreshold = 2.1;
 
-	private double offset = 0;
+	private static double offset = 0;
 
 	public void IMUInit() {
 		try {
@@ -35,9 +35,10 @@ public class IMU {
 		}
 	}
 
-	public double getAngle() {
+	public static double getAngle() {
 		//This returns degrees (0 to 360)
 		return MathUtils.resolveDeg(ahrs.getYaw() + offset);
+//		return 0;
 	}
 
 	public static double getVelocity() {
@@ -69,9 +70,9 @@ public class IMU {
 		return ahrs.getVelocityY();
 	}
 
-	public void reset() {
+	public void reset(int offset) {
 		ahrs.reset();
-		setOffset(0);
+		setOffset(offset);
 	}
 
 	public void setOffset(double offset) {

@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class XboxController extends Joystick {
 	private Joystick stick;
+	private double deadband;
 
 	public XboxController(int port) {
 		super(port);
@@ -51,11 +52,19 @@ public class XboxController extends Joystick {
 	}
 
 	public double LStickX() {
-		return stick.getRawAxis(0);
+		if (Math.abs(stick.getRawAxis(0)) > deadband) {
+			return stick.getRawAxis(0);
+		} else {
+			return 0.0;
+		}
 	}
 
 	public double LStickY() {
-		return stick.getRawAxis(1);
+		if (Math.abs(stick.getRawAxis(1)) > deadband) {
+			return stick.getRawAxis(1);
+		} else {
+			return 0.0;
+		}
 	}
 
 	public double LTrig() {
@@ -67,20 +76,35 @@ public class XboxController extends Joystick {
 	}
 
 	public double RStickX() {
-		return stick.getRawAxis(4);
+		if (Math.abs(stick.getRawAxis(4)) > deadband) {
+			return stick.getRawAxis(4);
+		} else {
+			return 0.0;
+		}
 	}
 
 	public double RStickY() {
-		return stick.getRawAxis(5);
+		if (Math.abs(stick.getRawAxis(5)) > deadband) {
+			return stick.getRawAxis(5);
+		} else {
+			return 0.0;
+		}
 	}
 
 	public int DPad() {
 		return stick.getPOV();
 	}
 
-	public void rumble() {
-		stick.setRumble(RumbleType.kRightRumble, 1);
-		stick.setRumble(RumbleType.kLeftRumble, 1);
+	public void setDeadband(double band) {
+		this.deadband = band;
+	}
+
+	public void rumbleRight(double val) {
+		stick.setRumble(RumbleType.kRightRumble, val);
+	}
+
+	public void rumbleLeft(double val) {
+		stick.setRumble(RumbleType.kLeftRumble, val);
 	}
 
 	public void stopRumble() {

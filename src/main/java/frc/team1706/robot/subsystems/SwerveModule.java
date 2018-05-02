@@ -172,6 +172,10 @@ public class SwerveModule {
 		translationMotor.set(command);
 	}
 
+	public double getAngle() {
+		return MathUtils.convertRange(0, 1024, 0, 360, rotationMotor.getSensorCollection().getAnalogIn());
+	}
+
 	void setSpeedCommand(double speedCommand) {
 		this.speedCommand = speedCommand;
 	}
