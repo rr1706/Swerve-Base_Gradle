@@ -17,13 +17,9 @@ gradle-app.setting
 *.xml
 *.lock
 *.bin
-*.iml
 *.jar
 *.properties
 *.xml___jb_tmp___
-.idea/compiler.xml
+.idea/*
 *.class
-*.xml
-*.jar
-*.class
-*.jar
+*.iml

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Code required to control team 1706's 2016 swerve drive train.
+ * Code required to control team 1706's swerve drivetrain.
  *
  * @author team1706
  */
@@ -110,5 +110,9 @@ public class SwerveDrivetrain {
 			wheel.drive();
 
 		}
+	}
+
+	public double getDistance() {
+		
 	}
 }
