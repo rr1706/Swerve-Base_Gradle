@@ -330,10 +330,11 @@ public class Robot extends TimedRobot {
 				SmartDashboard.putNumber("RCW", RCW);
 
 				/*
-				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
-				 * 4 = distance(in), 10 = time out(seconds),
-				 * 12 = imu offset, 13 = smoothStart, 14 = smoothEnd, 15 = onlyRotate
-				 * 16 = How to translate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
+				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face (Maintain, not turn),
+				 * 4 = distance(in), 5 = How to translate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
+				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle, 8 = smoothRotate
+				 * 9 = time out(seconds), 10 = imu offset
+				 *
 				 */
 
 //				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
@@ -349,32 +350,32 @@ public class Robot extends TimedRobot {
 					STR = 0;
 				}
 
-				if (commands[arrayIndex][13] <= 360.0 && commands[arrayIndex][13] >= -360.0) {
-					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][13], commands[arrayIndex][14], Math.abs(currentDistance - previousDistance)));
+				if (commands[arrayIndex][6] <= 360.0 && commands[arrayIndex][6] >= -360.0) {
+					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][6], commands[arrayIndex][7], Math.abs(currentDistance - previousDistance)));
 					FWD = Math.cos(smoothArc);
 					STR = Math.sin(smoothArc);
 				}
 
-				if (commands[arrayIndex][15] <= 360.0 && commands[arrayIndex][15] >= -360.0) {
+				if (commands[arrayIndex][8] <= 360.0 && commands[arrayIndex][8] >= -360.0) {
 					smoothRotate = MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, Math.toRadians(2.0), imu.getAngle());
-					RCW = Math.signum(commands[arrayIndex][15]-initialAngle) * Math.pow(3.5, -smoothRotate);
-					if (Math.abs(imu.getAngle() - commands[arrayIndex][15]) < 5.0) {
-						override = true;
+					RCW = Math.signum(commands[arrayIndex][8]-initialAngle) * Math.pow(3.5, -smoothRotate);
+					if (Math.abs(imu.getAngle() - commands[arrayIndex][8]) < 5.0) {
+						turnDone = true;
 					}
 				} else {
 					autonomousAngle = commands[arrayIndex][3];
 					initialAngle = imu.getAngle();
 				}
 
-				if (commands[arrayIndex][16] == 1) {
+				if (commands[arrayIndex][5] == 1) {
 					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), Math.toRadians(3.0), currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
-				} else if (commands[arrayIndex][16] == 2) {
+				} else if (commands[arrayIndex][5] == 2) {
 					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), 0.0, currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
-				} else if (commands[arrayIndex][16] == 3) {
+				} else if (commands[arrayIndex][5] == 3) {
 					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, Math.toRadians(3.0), currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
@@ -398,13 +399,13 @@ public class Robot extends TimedRobot {
 					RCW = 0;
 				}
 
-				if (Time.get() > timeBase + commands[arrayIndex][10] && commands[arrayIndex][10] > 0) {
+				if (Time.get() > timeBase + commands[arrayIndex][9] && commands[arrayIndex][9] > 0) {
 					override = true;
-				} else if (commands[arrayIndex][10] == 0) {
+				} else if (commands[arrayIndex][9] == 0) {
 					timeDone = true;
 				}
 
-				imuOffset = commands[arrayIndex][12];
+				imuOffset = commands[arrayIndex][10];
 
 				if (robotBackwards) {
 					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
