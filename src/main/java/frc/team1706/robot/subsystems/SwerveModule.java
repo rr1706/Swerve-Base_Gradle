@@ -29,10 +29,7 @@ public class SwerveModule {
 	private TalonSRX rotationMotor;
 	private Encoder encoder;
 	private boolean wheelReversed;
-	private boolean movingRight;
-	private boolean movingFor;
 	private double rawError;
-	private double rac;
 	private double rightDelta;
 	private double forwardDelta;
 
@@ -68,11 +65,6 @@ public class SwerveModule {
 
 		angleError = rotationMotor.getClosedLoopError(0);
 
-		/*
-		 * If the error is greater than 90 then change direction by 180
-		 * and reverse the wheel speed command.
-		 * Also adjust error now to match the new wheel command.
-		 */
 		rawError = angleError;
 
 //		if (wheelReversed) {
@@ -103,7 +95,7 @@ public class SwerveModule {
 		}
 
 		/*
-		 * If the wheel has to move over 256 units (45 degrees)
+		 * If the wheel has to move over 256 units (90 degrees)
 		 * go opposite to command and reverse translation
 		 */
 		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSensorCollection().getAnalogIn())) > 256) {
@@ -131,7 +123,7 @@ public class SwerveModule {
 		}
 
 		//Debugging
-		if (id == 1) {
+//		if (id == 1) {
 //			SmartDashboard.putNumber("Error", rotationMotor.getClosedLoopError(0));
 //			SmartDashboard.putNumber("Motor Angle", rotationMotor.getSelectedSensorPosition(0));
 //			SmartDashboard.putNumber("Joystick Command", this.angleCommand);
@@ -141,14 +133,10 @@ public class SwerveModule {
 //			SmartDashboard.putNumber("Angle Command", -z);
 //
 //			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0)+","+SmartDashboard.getNumber("2018 SRX Test", 0));
-		}
+//		}
 
 		rightDelta = delta * Math.sin(MathUtils.resolveAngle(Math.toRadians(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + Math.toDegrees(offset))));
 		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + Math.toDegrees(offset))));
-
-		movingRight = (Math.sin(Math.toRadians(rac - Math.toDegrees(offset))) > 0);
-
-		movingFor = (Math.cos(Math.toRadians(rac - Math.toDegrees(offset))) > 0);
 
 		previousDistance = distance;
 
@@ -243,18 +231,6 @@ public class SwerveModule {
 
 	public double getRawError() {
 		return rawError;
-	}
-
-	public double getrac() {
-		return rac;
-	}
-
-	public boolean getRight() {
-		return movingRight;
-	}
-
-	public boolean getFor() {
-		return movingFor;
 	}
 
 	public double[] getXYDist() {
