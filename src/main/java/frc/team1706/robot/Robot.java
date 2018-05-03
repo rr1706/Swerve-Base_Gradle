@@ -342,21 +342,21 @@ public class Robot extends TimedRobot {
 				rSpeed = commands[arrayIndex][1];
 
 				if (commands[arrayIndex][2] != -1) {
-					FWD = Math.cos(MathUtils.degToRad(commands[arrayIndex][2]));
-					STR = Math.sin(MathUtils.degToRad(commands[arrayIndex][2]));
+					FWD = Math.cos(Math.toRadians(commands[arrayIndex][2]));
+					STR = Math.sin(Math.toRadians(commands[arrayIndex][2]));
 				} else {
 					FWD = 0;
 					STR = 0;
 				}
 
 				if (commands[arrayIndex][13] <= 360.0 && commands[arrayIndex][13] >= -360.0) {
-					smoothArc = MathUtils.degToRad(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][13], commands[arrayIndex][14], Math.abs(currentDistance - previousDistance)));
+					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][13], commands[arrayIndex][14], Math.abs(currentDistance - previousDistance)));
 					FWD = Math.cos(smoothArc);
 					STR = Math.sin(smoothArc);
 				}
 
 				if (commands[arrayIndex][15] <= 360.0 && commands[arrayIndex][15] >= -360.0) {
-					smoothRotate = MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, 2.0, imu.getAngle());
+					smoothRotate = MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, Math.toRadians(2.0), imu.getAngle());
 					RCW = Math.signum(commands[arrayIndex][15]-initialAngle) * Math.pow(3.5, -smoothRotate);
 					if (Math.abs(imu.getAngle() - commands[arrayIndex][15]) < 5.0) {
 						override = true;
@@ -367,21 +367,21 @@ public class Robot extends TimedRobot {
 				}
 
 				if (commands[arrayIndex][16] == 1) {
-					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 3.0, currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), Math.toRadians(3.0), currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				} else if (commands[arrayIndex][16] == 2) {
-					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 0.0, currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), 0.0, currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				} else if (commands[arrayIndex][16] == 3) {
-					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 3.0, currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, Math.toRadians(3.0), currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				}
 
 				Vector driveCommands;
-				driveCommands = MathUtils.convertOrientation(MathUtils.degToRad(imu.getAngle()), FWD, STR);
+				driveCommands = MathUtils.convertOrientation(Math.toRadians(imu.getAngle()), FWD, STR);
 				FWD = driveCommands.getY() * tSpeed;
 				STR = driveCommands.getX() * tSpeed;
 				RCW *= rSpeed;
@@ -520,7 +520,7 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 		double headingDeg = imu.getAngle();
-		double headingRad = MathUtils.degToRad(headingDeg);
+		double headingRad = Math.toRadians(headingDeg);
 
 		currentOrientedButton = xbox1.A();
 		if (currentOrientedButton && !previousOrientedButton) {

@@ -85,20 +85,6 @@ public class MathUtils {
 		return error;
 	}
 
-	/**
-	 * Converts a number from radians to degrees
-	 */
-	public static double radToDeg(double x) {
-		return x * 180.0 / Math.PI;
-	}
-
-	/**
-	 * Converts a number from degrees to radians
-	 */
-	public static double degToRad(double x) {
-		return x * Math.PI / 180;
-	}
-
 	public static double meterToInch(double x) {
 		return x * 39.3701;
 	}
