@@ -50,6 +50,7 @@ public class Robot extends TimedRobot {
 	private double[][] commands;
 	private int arrayIndex = -1;
 	private int autoMove = 0;
+	private int translateType;
 	private double autonomousAngle;
 	private double tSpeed;
 	private double rSpeed;
@@ -63,8 +64,9 @@ public class Robot extends TimedRobot {
 	private boolean moonDone;
 	private double timeBase;
 	private boolean timeCheck;
-	private  double smoothArc;
-	private  double smoothRotate;
+	private double smoothArc;
+	private double smoothRotate;
+	private double smoothTranslate;
 	private double initialAngle;
 
 	private int dx = -1;
@@ -331,7 +333,7 @@ public class Robot extends TimedRobot {
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 10 = time out(seconds),
 				 * 12 = imu offset, 13 = smoothStart, 14 = smoothEnd, 15 = onlyRotate
-				 *
+				 * 16 = How to translate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
 				 */
 
 //				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
@@ -362,6 +364,20 @@ public class Robot extends TimedRobot {
 				} else {
 					autonomousAngle = commands[arrayIndex][3];
 					initialAngle = imu.getAngle();
+				}
+
+				if (commands[arrayIndex][16] == 1) {
+					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 3.0, currentDistance));
+					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
+					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
+				} else if (commands[arrayIndex][16] == 2) {
+					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 0.0, currentDistance));
+					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
+					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
+				} else if (commands[arrayIndex][16] == 3) {
+					smoothTranslate = MathUtils.degToRad(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 3.0, currentDistance));
+					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
+					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				}
 
 				Vector driveCommands;
