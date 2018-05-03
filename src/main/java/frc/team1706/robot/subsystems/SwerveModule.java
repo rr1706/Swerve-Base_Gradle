@@ -143,12 +143,12 @@ public class SwerveModule {
 //			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0)+","+SmartDashboard.getNumber("2018 SRX Test", 0));
 		}
 
-		rightDelta = delta * Math.sin(MathUtils.resolveAngle(MathUtils.degToRad(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + MathUtils.radToDeg(offset))));
-		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(MathUtils.degToRad(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + MathUtils.radToDeg(offset))));
+		rightDelta = delta * Math.sin(MathUtils.resolveAngle(Math.toRadians(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + Math.toDegrees(offset))));
+		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + Math.toDegrees(offset))));
 
-		movingRight = (Math.sin(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0);
+		movingRight = (Math.sin(Math.toRadians(rac - Math.toDegrees(offset))) > 0);
 
-		movingFor = (Math.cos(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0);
+		movingFor = (Math.cos(Math.toRadians(rac - Math.toDegrees(offset))) > 0);
 
 		previousDistance = distance;
 
@@ -193,7 +193,7 @@ public class SwerveModule {
 	}
 
 	public void setOffset(double offset) {
-		this.offset = MathUtils.degToRad(offset);
+		this.offset = Math.toRadians(offset);
 	}
 
 	Vector getPosition() {
