@@ -357,7 +357,7 @@ public class Robot extends TimedRobot {
 				}
 
 				if (commands[arrayIndex][8] <= 360.0 && commands[arrayIndex][8] >= -360.0) {
-					smoothRotate = MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, Math.toRadians(2.0), imu.getAngle());
+					smoothRotate = Math.toRadians(MathUtils.convertRange(initialAngle, commands[arrayIndex][15], 0.0, 2.0, imu.getAngle()));
 					RCW = Math.signum(commands[arrayIndex][8]-initialAngle) * Math.pow(3.5, -smoothRotate);
 					if (Math.abs(imu.getAngle() - commands[arrayIndex][8]) < 5.0) {
 						turnDone = true;
@@ -368,15 +368,15 @@ public class Robot extends TimedRobot {
 				}
 
 				if (commands[arrayIndex][5] == 1) {
-					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), Math.toRadians(3.0), currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 3.0, currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				} else if (commands[arrayIndex][5] == 2) {
-					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], Math.toRadians(-3.0), 0.0, currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -3.0, 0.0, currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				} else if (commands[arrayIndex][5] == 3) {
-					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, Math.toRadians(3.0), currentDistance));
+					smoothTranslate = Math.toRadians(MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 3.0, currentDistance));
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				}
