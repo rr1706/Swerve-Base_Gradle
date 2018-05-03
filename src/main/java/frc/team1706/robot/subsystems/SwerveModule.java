@@ -108,7 +108,7 @@ public class SwerveModule {
 		}
 
 		/*
-		 * If wheel direction has to change more than 128 units (22.5 degrees)
+		 * If wheel direction has to change more than 128 units (45 degrees)
 		 * then set wheel speed command to 0 while wheel is turning.
 		 */
 		if (Math.abs(angleError) < 128) {
