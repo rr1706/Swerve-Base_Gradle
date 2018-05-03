@@ -53,8 +53,8 @@ public class Robot extends TimedRobot {
 	private double autonomousAngle;
 	private double tSpeed;
 	private double rSpeed;
-	private double previousDistance;
-	private double currentDistance;
+	private double previousDistance = 0.0;
+	private double currentDistance = 0.0;
 	private boolean override;
 	private boolean driveDone;
 	private boolean turnDone;
@@ -310,7 +310,7 @@ public class Robot extends TimedRobot {
 				if (Time.get() > timeBase + SmartDashboard.getNumber("Autonomous Delay", 0)) {
 					autoMove = 1;
 				}
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
+//				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 				previousDistance = currentDistance;
 
 				break;
@@ -333,9 +333,8 @@ public class Robot extends TimedRobot {
 				 * 12 = imu offset, 13 = smoothStart, 14 = smoothEnd, 15 = onlyRotate
 				 *
 				 */
-				//Note: use moonRCW to rotate robot
 
-				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
+//				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 
 				tSpeed = commands[arrayIndex][0];
 				rSpeed = commands[arrayIndex][1];
@@ -572,6 +571,10 @@ public class Robot extends TimedRobot {
 		} else {
 			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		}
+	}
+
+	public void robotPeriodic() {
+		currentDistance += MathUtils.getRobotDistance();
 	}
 
 	public void disabledInit() {

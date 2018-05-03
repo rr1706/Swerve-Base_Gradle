@@ -75,17 +75,15 @@ public class SwerveModule {
 		 */
 		rawError = angleError;
 
-		if (wheelReversed) {
-			delta = previousDistance - distance;
-		} else {
+//		if (wheelReversed) {
+//			delta = previousDistance - distance;
+//		} else {
 			delta = distance - previousDistance;
-		}
+//		}
 
 		if (speedCommand == 0) {
 			angleError = 0;
 		}
-
-
 
 		//Count rotation cycles of wheel
 		i = Math.floor(rotationMotor.getSensorCollection().getAnalogIn() / 1024);
@@ -132,6 +130,7 @@ public class SwerveModule {
 
 		}
 
+		//Debugging
 		if (id == 1) {
 //			SmartDashboard.putNumber("Error", rotationMotor.getClosedLoopError(0));
 //			SmartDashboard.putNumber("Motor Angle", rotationMotor.getSelectedSensorPosition(0));
@@ -144,15 +143,12 @@ public class SwerveModule {
 //			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0)+","+SmartDashboard.getNumber("2018 SRX Test", 0));
 		}
 
-		rightDelta = delta * Math.sin(MathUtils.degToRad(rac));
-		forwardDelta = delta * Math.cos(MathUtils.degToRad(rac));
+		rightDelta = delta * Math.sin(MathUtils.resolveAngle(MathUtils.degToRad(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + MathUtils.radToDeg(offset))));
+		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(MathUtils.degToRad(rotationMotor.getSensorCollection().getAnalogIn() / 1024 * 360 + MathUtils.radToDeg(offset))));
 
 		movingRight = (Math.sin(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0);
 
 		movingFor = (Math.cos(MathUtils.degToRad(rac - MathUtils.radToDeg(offset))) > 0);
-
-		rightSum += rightDelta;
-		forwardSum += forwardDelta;
 
 		previousDistance = distance;
 
@@ -259,5 +255,10 @@ public class SwerveModule {
 
 	public boolean getFor() {
 		return movingFor;
+	}
+
+	public double[] getXYDist() {
+		double[] i = {rightDelta, forwardDelta};
+		return i;
 	}
 }

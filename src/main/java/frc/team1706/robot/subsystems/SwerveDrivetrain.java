@@ -111,8 +111,4 @@ public class SwerveDrivetrain {
 
 		}
 	}
-
-	public double getDistance() {
-		
-	}
 }
