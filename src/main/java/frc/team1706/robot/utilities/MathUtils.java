@@ -1,5 +1,6 @@
 package frc.team1706.robot.utilities;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.subsystems.SwerveDrivetrain;
 
 /**
@@ -35,10 +36,13 @@ public class MathUtils {
 		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
 		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
 
+		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
+		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
+
 		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/4.0;
 		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/4.0;
 
-		return MathUtils.pythagorean(xAvg, yAvg);
+		return pythagorean(xAvg, yAvg);
 	}
 
 	public static double reverseWheelDirection(double direction) {
@@ -72,6 +76,19 @@ public class MathUtils {
 
 		return newValue;
 	}
+
+	public static double getAngleError(double input, double setpoint) {
+		double error = setpoint - input;
+		if (Math.abs(error) > 180.0) {
+			if (error > 0) {
+				error -= 360.0;
+			} else {
+				error += 360.0;
+			}
+		}
+		return error;
+	}
+
 
 	public static double calculateError(double direction, double sensor) {
 		double error = direction - sensor;
