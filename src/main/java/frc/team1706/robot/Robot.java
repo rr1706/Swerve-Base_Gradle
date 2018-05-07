@@ -32,7 +32,6 @@ public class Robot extends TimedRobot {
 
 	public static XboxController xbox1 = new XboxController(0);
 //	public static XboxController xbox2 = new XboxController(1);
-//	private static XboxController endbox = new XboxController(2);
 
 	private int autonomousChoice;
 //	private JetsonServer jet;
