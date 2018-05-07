@@ -69,6 +69,7 @@ public class Robot extends TimedRobot {
 	private double smoothTranslate;
 	private double initialAngle;
 	private double initialError;
+	private final double minSpeed = 0.292;
 
 	private int dx = -1;
 
@@ -402,10 +403,18 @@ public class Robot extends TimedRobot {
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				}
 
+				FWD *= tSpeed;
+				STR *= tSpeed;
+
+				if (commands[arrayIndex][5] != 0 && (0.5*Math.cos(smoothTranslate)+0.5)*tSpeed < minSpeed) {
+					FWD = minSpeed;
+					STR = minSpeed;
+				}
+
 				Vector driveCommands;
 				driveCommands = MathUtils.convertOrientation(Math.toRadians(imu.getAngle()), FWD, STR);
-				FWD = driveCommands.getY() * tSpeed;
-				STR = driveCommands.getX() * tSpeed;
+				FWD = driveCommands.getY();
+				STR = driveCommands.getX();
 				RCW *= rSpeed;
 
 				if ((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
