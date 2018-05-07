@@ -1,5 +1,6 @@
 package frc.team1706.robot.subsystems;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.utilities.MathUtils;
 import frc.team1706.robot.utilities.Vector;
 
@@ -10,16 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Code required to control team 1706's swerve drivetrain.
- *
- * @author team1706
- */
 public class SwerveDrivetrain {
 	private static String[] FRPorts;
 	private static String[] FLPorts;
 	private static String[] BLPorts;
 	private static String[] BRPorts;
+
+	private static double encoders = 4.0;
 
 	public enum WheelType {
 		FRONT_RIGHT, FRONT_LEFT, BACK_LEFT, BACK_RIGHT
@@ -96,19 +94,43 @@ public class SwerveDrivetrain {
 			}
 		}
 
+		double encoderCount = 0.0;
 		for (WheelType type : swerveModules.keySet()) {
 			SwerveModule wheel = swerveModules.get(type);
 
 			double speed = wheel.getSpeedCommand() / max; // normalized to maximum of 1
 			wheel.setSpeedCommand(speed);
-
-		}
-
-		for (WheelType type : swerveModules.keySet()) {
-			SwerveModule wheel = swerveModules.get(type);
-
 			wheel.drive();
 
+			if (wheel.getEncoderAlive()) {
+				encoderCount++;
+			}
+			setEncoderAmount(encoderCount);
 		}
+	}
+
+	//Returns distance gone in last frame
+	public static double getRobotDistance() {
+		double[] xyDistFR = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
+		double[] xyDistBL = swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
+		double[] xyDistFL = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
+		double[] xyDistBR = swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
+
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
+
+		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
+		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
+
+		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/encoders;
+		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/encoders;
+
+		return MathUtils.pythagorean(xAvg, yAvg);
+	}
+
+	private static void setEncoderAmount(double amount) {
+		encoders = amount;
 	}
 }

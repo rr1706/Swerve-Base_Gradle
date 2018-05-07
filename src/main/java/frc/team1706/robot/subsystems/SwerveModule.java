@@ -3,10 +3,8 @@ package frc.team1706.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.utilities.MathUtils;
 import frc.team1706.robot.utilities.Vector;
@@ -20,7 +18,8 @@ public class SwerveModule {
 	private double speedCommand;
 	private double angleCommand;
 	private double distance;
-	private double previousDistance = 0;
+	private double previousDistance = 0.0;
+	private double previousRobotDistance = 0.0;
 	private double delta;
 	private double angleError;
 	private double rightSum = 0;
@@ -34,12 +33,16 @@ public class SwerveModule {
 	private double forwardDelta;
 	private double currentAngle;
 
+	private int encoderCheck = 0;
+
 	private double i;
 	private double j;
 	private double k;
 	private double z;
 
 	private int id;
+
+	private boolean encoderAlive = true;
 
 	/**
 	 */
@@ -70,11 +73,7 @@ public class SwerveModule {
 
 		rawError = angleError;
 
-//		if (wheelReversed) {
-//			delta = previousDistance - distance;
-//		} else {
-			delta = distance - previousDistance;
-//		}
+		delta = distance - previousDistance;
 
 		if (speedCommand == 0) {
 			angleError = 0;
@@ -124,6 +123,16 @@ public class SwerveModule {
 			rotationMotor.set(ControlMode.Position, z);
 		}
 
+		if ((SwerveDrivetrain.getRobotDistance() != previousRobotDistance) && (distance == previousDistance)) {
+			encoderCheck++;
+		} else {
+			encoderCheck = 0;
+		}
+
+		if (encoderCheck == 5) {
+			encoderAlive = false;
+		}
+
 		//Debugging
 		if (id == 1) {
 			SmartDashboard.putNumber("Motor AngleFR", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
@@ -139,6 +148,7 @@ public class SwerveModule {
 		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset))));
 
 		previousDistance = distance;
+		previousRobotDistance = SwerveDrivetrain.getRobotDistance();
 
 	}
 
@@ -239,6 +249,15 @@ public class SwerveModule {
 			rightSum *= -1.0;
 		}
 		double[] i = {rightDelta, forwardDelta};
-		return i;
+		double[] j = {0.0, 0.0};
+		if (encoderAlive) {
+			return i;
+		} else {
+			return j;
+		}
+	}
+
+	public boolean getEncoderAlive() {
+		return encoderAlive;
 	}
 }
