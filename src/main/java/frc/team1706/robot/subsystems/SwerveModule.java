@@ -3,8 +3,10 @@ package frc.team1706.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.utilities.MathUtils;
 import frc.team1706.robot.utilities.Vector;
@@ -18,8 +20,7 @@ public class SwerveModule {
 	private double speedCommand;
 	private double angleCommand;
 	private double distance;
-	private double previousDistance = 0.0;
-	private double previousRobotDistance = 0.0;
+	private double previousDistance = 0;
 	private double delta;
 	private double angleError;
 	private double rightSum = 0;
@@ -33,16 +34,12 @@ public class SwerveModule {
 	private double forwardDelta;
 	private double currentAngle;
 
-	private int encoderCheck = 0;
-
 	private double i;
 	private double j;
 	private double k;
 	private double z;
 
 	private int id;
-
-	private boolean encoderAlive = true;
 
 	/**
 	 */
@@ -73,7 +70,11 @@ public class SwerveModule {
 
 		rawError = angleError;
 
-		delta = distance - previousDistance;
+//		if (wheelReversed) {
+//			delta = previousDistance - distance;
+//		} else {
+			delta = distance - previousDistance;
+//		}
 
 		if (speedCommand == 0) {
 			angleError = 0;
@@ -123,32 +124,9 @@ public class SwerveModule {
 			rotationMotor.set(ControlMode.Position, z);
 		}
 
-<<<<<<< HEAD
-//		if ((SwerveDrivetrain.getRobotDistance() != previousRobotDistance) && (distance == previousDistance)) {
-//			encoderCheck++;
-//		} else {
-//			encoderCheck = 0;
-//		}
-//
-//		if (encoderCheck == 10) {
-//			encoderAlive = false;
-//		}
-=======
-		if ((SwerveDrivetrain.getRobotDistance() != previousRobotDistance) && (distance == previousDistance)) {
-			encoderCheck++;
-		} else {
-			encoderCheck = 0;
-		}
-
-		if (encoderCheck == 10) {
-//			encoderAlive = false;
-		}
->>>>>>> 5283c166f4ac5e83fdb63a939805933682c96ae8
-
 		//Debugging
 		if (id == 1) {
 			SmartDashboard.putNumber("Motor AngleFR", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
-			System.out.println(this.speedCommand + "!!!!!!!!!!!!!!!!!!");
 		} else if (id == 2) {
 			SmartDashboard.putNumber("Motor AngleFL", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
 		} else if (id == 3) {
@@ -161,7 +139,6 @@ public class SwerveModule {
 		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset))));
 
 		previousDistance = distance;
-		previousRobotDistance = SwerveDrivetrain.getRobotDistance();
 
 	}
 
@@ -231,6 +208,22 @@ public class SwerveModule {
 		return this.wheelReversed;
 	}
 
+	public double getRightSum() {
+		if (wheelReversed) {
+			return -rightSum;
+		} else {
+			return rightSum;
+		}
+	}
+
+	public double getForwardSum() {
+		if (wheelReversed) {
+			return -forwardSum;
+		} else {
+			return forwardSum;
+		}
+	}
+
 	public void resetDelta() {
 		rightSum = 0.0;
 		forwardSum = 0.0;
@@ -244,18 +237,8 @@ public class SwerveModule {
 		if (wheelReversed) {
 			forwardSum *= -1.0;
 			rightSum *= -1.0;
-//			System.out.println("A");
 		}
 		double[] i = {rightDelta, forwardDelta};
-		double[] j = {0.0, 0.0};
-		if (encoderAlive) {
-			return i;
-		} else {
-			return j;
-		}
-	}
-
-	public boolean getEncoderAlive() {
-		return encoderAlive;
+		return i;
 	}
 }

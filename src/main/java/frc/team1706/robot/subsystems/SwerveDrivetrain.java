@@ -1,6 +1,5 @@
 package frc.team1706.robot.subsystems;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.utilities.MathUtils;
 import frc.team1706.robot.utilities.Vector;
 
@@ -11,18 +10,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Code required to control team 1706's swerve drivetrain.
+ *
+ * @author team1706
+ */
 public class SwerveDrivetrain {
 	private static String[] FRPorts;
 	private static String[] FLPorts;
 	private static String[] BLPorts;
 	private static String[] BRPorts;
-
-<<<<<<< HEAD
-	private static double xDist = 0.0;
-	private static double yDist = 0.0;
-=======
-	private static double encoders = 4.0;
->>>>>>> 5283c166f4ac5e83fdb63a939805933682c96ae8
 
 	public enum WheelType {
 		FRONT_RIGHT, FRONT_LEFT, BACK_LEFT, BACK_RIGHT
@@ -57,33 +54,6 @@ public class SwerveDrivetrain {
 		swerveModules.put(WheelType.BACK_LEFT, new SwerveModule(Integer.parseInt(BLPorts[0]), Integer.parseInt(BLPorts[1]), Integer.parseInt(BLPorts[2]), Integer.parseInt(BLPorts[3])/* 2, 2, 4, 5 */));
 		swerveModules.put(WheelType.FRONT_LEFT, new SwerveModule(Integer.parseInt(FLPorts[0]), Integer.parseInt(FLPorts[1]), Integer.parseInt(FLPorts[2]), Integer.parseInt(FLPorts[3])/* 3, 3, 0, 1 */));
 
-	}
-
-	//Returns distance gone in last frame
-	public static double getRobotDistance() {
-		double[] xyDistFR = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
-		double[] xyDistFL = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
-		double[] xyDistBL = swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
-		double[] xyDistBR = swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
-
-		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
-
-		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
-		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
-
-		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/4.0;
-		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/4.0;
-
-		xDist += xAvg;
-		yDist += yAvg;
-
-		SmartDashboard.putNumber("X Dist", xDist);
-		SmartDashboard.putNumber("Y Dist", yDist);
-
-		return MathUtils.pythagorean(xAvg, yAvg);
 	}
 
 	/**
@@ -126,43 +96,19 @@ public class SwerveDrivetrain {
 			}
 		}
 
-//		double encoderCount = 0.0;
 		for (WheelType type : swerveModules.keySet()) {
 			SwerveModule wheel = swerveModules.get(type);
 
 			double speed = wheel.getSpeedCommand() / max; // normalized to maximum of 1
 			wheel.setSpeedCommand(speed);
+
+		}
+
+		for (WheelType type : swerveModules.keySet()) {
+			SwerveModule wheel = swerveModules.get(type);
+
 			wheel.drive();
 
-//			if (wheel.getEncoderAlive()) {
-//				encoderCount++;
-//			}
-//			setEncoderAmount(encoderCount);
 		}
-	}
-
-	//Returns distance gone in last frame
-	public static double getRobotDistance() {
-		double[] xyDistFR = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
-		double[] xyDistBL = swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
-		double[] xyDistFL = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
-		double[] xyDistBR = swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
-
-		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
-		swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
-
-		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
-		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
-
-		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/encoders;
-		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/encoders;
-
-		return MathUtils.pythagorean(xAvg, yAvg);
-	}
-
-	private static void setEncoderAmount(double amount) {
-		encoders = amount;
 	}
 }
