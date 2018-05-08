@@ -208,22 +208,6 @@ public class SwerveModule {
 		return this.wheelReversed;
 	}
 
-	public double getRightSum() {
-		if (wheelReversed) {
-			return -rightSum;
-		} else {
-			return rightSum;
-		}
-	}
-
-	public double getForwardSum() {
-		if (wheelReversed) {
-			return -forwardSum;
-		} else {
-			return forwardSum;
-		}
-	}
-
 	public void resetDelta() {
 		rightSum = 0.0;
 		forwardSum = 0.0;

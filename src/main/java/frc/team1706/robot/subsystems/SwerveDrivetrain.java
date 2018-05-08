@@ -10,11 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Code required to control team 1706's swerve drivetrain.
- *
- * @author team1706
- */
 public class SwerveDrivetrain {
 	private static String[] FRPorts;
 	private static String[] FLPorts;
