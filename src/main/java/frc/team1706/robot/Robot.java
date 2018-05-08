@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
 
 		// This will update the angle to keep the robot's orientation
 		if (Math.abs(xbox1.RStickX()) > 0.05 || // If right stick is pressed
-				(Math.abs(FWD) < 0.05 && Math.abs(STR) < 0.05) && // If left stick is not pressed
+				(Math.abs(xbox1.LStickX()) < 0.05 && Math.abs(xbox1.LStickY()) < 0.05) && // If left stick is not pressed
 						(xbox1.DPad() == -1) && // If dpad is not pressed
 						(!autonomous)) { // If teleop
 
@@ -403,18 +403,18 @@ public class Robot extends TimedRobot {
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				}
 
-				FWD *= tSpeed;
-				STR *= tSpeed;
-
-				if (commands[arrayIndex][5] != 0 && (0.5*Math.cos(smoothTranslate)+0.5)*tSpeed < minSpeed) {
-					FWD = minSpeed;
-					STR = minSpeed;
-				}
+//				FWD *= tSpeed;
+//				STR *= tSpeed;
+//
+//				if (commands[arrayIndex][5] != 0 && (0.5*Math.cos(smoothTranslate)+0.5)*tSpeed < minSpeed) {
+//					FWD = minSpeed;
+//					STR = minSpeed;
+//				}
 
 				Vector driveCommands;
 				driveCommands = MathUtils.convertOrientation(Math.toRadians(imu.getAngle()), FWD, STR);
-				FWD = driveCommands.getY();
-				STR = driveCommands.getX();
+				FWD = driveCommands.getY() * tSpeed;
+				STR = driveCommands.getX() * tSpeed;
 				RCW *= rSpeed;
 
 				if ((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
@@ -423,7 +423,8 @@ public class Robot extends TimedRobot {
 					FWD = 0;
 				}
 
-				System.out.println(Math.abs(currentDistance - previousDistance));
+//				System.out.println(currentDistance + " | " + previousDistance);
+//				System.out.println("Dist: " + Math.abs(currentDistance - previousDistance));
 
 				SwerveCompensate.setTolerance(1);
 //				if ((SwerveCompensate.onTarget() || commands[arrayIndex][3] == -1) && !(commands[arrayIndex][8] <= 360.0 && commands[arrayIndex][8] >= -360.0)) {
@@ -443,6 +444,8 @@ public class Robot extends TimedRobot {
 				if (turnDone) {
 					keepAngle();
 				}
+
+				System.out.println(FWD + " | " + STR);
 
 				if (robotBackwards) {
 					driveTrain.drive(new Vector(-STR, -FWD), -RCW);

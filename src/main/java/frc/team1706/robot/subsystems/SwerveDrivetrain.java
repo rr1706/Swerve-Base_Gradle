@@ -94,7 +94,7 @@ public class SwerveDrivetrain {
 			}
 		}
 
-		double encoderCount = 0.0;
+//		double encoderCount = 0.0;
 		for (WheelType type : swerveModules.keySet()) {
 			SwerveModule wheel = swerveModules.get(type);
 
@@ -102,10 +102,10 @@ public class SwerveDrivetrain {
 			wheel.setSpeedCommand(speed);
 			wheel.drive();
 
-			if (wheel.getEncoderAlive()) {
-				encoderCount++;
-			}
-			setEncoderAmount(encoderCount);
+//			if (wheel.getEncoderAlive()) {
+//				encoderCount++;
+//			}
+//			setEncoderAmount(encoderCount);
 		}
 	}
 

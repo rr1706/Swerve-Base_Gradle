@@ -129,13 +129,14 @@ public class SwerveModule {
 			encoderCheck = 0;
 		}
 
-		if (encoderCheck == 5) {
-			encoderAlive = false;
+		if (encoderCheck == 10) {
+//			encoderAlive = false;
 		}
 
 		//Debugging
 		if (id == 1) {
 			SmartDashboard.putNumber("Motor AngleFR", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
+			System.out.println(this.speedCommand + "!!!!!!!!!!!!!!!!!!");
 		} else if (id == 2) {
 			SmartDashboard.putNumber("Motor AngleFL", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
 		} else if (id == 3) {
