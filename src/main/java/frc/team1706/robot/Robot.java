@@ -260,6 +260,8 @@ public class Robot extends TimedRobot {
 			choice = "/home/lvuser/Forward.csv";
 		}
 
+		choice = "/home/lvuser/Test.csv";
+
 		SmartDashboard.putString("Autonomous File", choice);
 
 		arrayIndex = 0;
