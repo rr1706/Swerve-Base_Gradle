@@ -202,7 +202,7 @@ public class Robot extends TimedRobot {
 
 		compressor = new Compressor(0);
 
-		xbox1.setDeadband(0.01);
+		xbox1.setDeadband(0.05);
 
 		Time.start();
 
@@ -368,12 +368,12 @@ public class Robot extends TimedRobot {
 						smoothRotateStarted = true;
 					}
 
-					smoothRotate = (MathUtils.convertRange(initialError, commands[arrayIndex][8], 0.0, 2.0, MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][8])));
+					smoothRotate = (MathUtils.convertRange(initialError, commands[arrayIndex][8], 0.0, 0.5, MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][8])));
 					direction = commands[arrayIndex][8]-initialAngle;
 					if (Math.abs(direction) > 180.0) {
 						direction *= -1.0;
 					}
-					RCW = Math.signum(direction) * -Math.sqrt(0.25*smoothRotate)+0.75;
+					RCW = Math.signum(direction) * 0.2;//(Math.pow(10.0, -smoothRotate)-0.25);
 
 					if (Math.abs(MathUtils.resolveDeg(imu.getAngle() - commands[arrayIndex][8])) < 5.0) {
 						turnDone = true;
@@ -385,6 +385,8 @@ public class Robot extends TimedRobot {
 					initialAngle = imu.getAngle();
 					turnDone = true;
 				}
+
+				System.out.println(RCW);
 
 //				System.out.println(MathUtils.resolveDeg(commands[arrayIndex][8]-initialAngle));
 //				System.out.println(RCW);
@@ -436,13 +438,15 @@ public class Robot extends TimedRobot {
 					keepAngle();
 				}
 
+//				System.out.println("FWD: " + FWD + " STR: " + STR + " RCW: " + RCW);
+
 				if (robotBackwards) {
 					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
 				} else {
 					driveTrain.drive(new Vector(STR, FWD), RCW);
 				}
 
-				System.out.println("d: " + driveDone + " | t: " + turnDone);
+//				System.out.println("d: " + driveDone + " | t: " + turnDone);
 
 				if (override) {
 					driveDone = true;
@@ -625,7 +629,7 @@ public class Robot extends TimedRobot {
 	}
 
 	public void robotPeriodic() {
-		currentDistance += MathUtils.getRobotDistance();
+		currentDistance += SwerveDrivetrain.getRobotDistance();
 		SmartDashboard.putNumber("Distance", currentDistance);
 	}
 
