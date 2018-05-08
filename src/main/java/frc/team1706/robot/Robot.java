@@ -375,6 +375,8 @@ public class Robot extends TimedRobot {
 						keepAngle = commands[arrayIndex][3];
 						initialAngle = imu.getAngle();
 						turnDone = true;
+					} else {
+						turnDone = false;
 					}
 				}
 
