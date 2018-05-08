@@ -70,7 +70,7 @@ public class Robot extends TimedRobot {
 	private double smoothTranslate;
 	private double initialAngle;
 	private double initialError;
-	private final double minSpeed = 0.292;
+	private final double minSpeed = 0.2;
 
 	private int dx = -1;
 
@@ -395,21 +395,16 @@ public class Robot extends TimedRobot {
 					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
 					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
 				} else if (commands[arrayIndex][5] == 2) {
-					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -2.0, 0.0, currentDistance));
-					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
-					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
+					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 0.2214, currentDistance));
+					FWD *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
+					STR *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
 				} else if (commands[arrayIndex][5] == 3) {
-					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.8, currentDistance));
-					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
-					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
-				}
-
-				FWD *= tSpeed;
-				STR *= tSpeed;
-
-				if (commands[arrayIndex][5] != 0 && (0.5*Math.cos(smoothTranslate)+0.5)*tSpeed < minSpeed) {
-					FWD = minSpeed;
-					STR = minSpeed;
+					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.5, currentDistance));
+					FWD *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
+					STR *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
+				} else {
+					FWD *= tSpeed;
+					STR *= tSpeed;
 				}
 
 				Vector driveCommands;
