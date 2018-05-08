@@ -123,6 +123,7 @@ public class SwerveModule {
 			rotationMotor.set(ControlMode.Position, z);
 		}
 
+<<<<<<< HEAD
 //		if ((SwerveDrivetrain.getRobotDistance() != previousRobotDistance) && (distance == previousDistance)) {
 //			encoderCheck++;
 //		} else {
@@ -132,10 +133,22 @@ public class SwerveModule {
 //		if (encoderCheck == 10) {
 //			encoderAlive = false;
 //		}
+=======
+		if ((SwerveDrivetrain.getRobotDistance() != previousRobotDistance) && (distance == previousDistance)) {
+			encoderCheck++;
+		} else {
+			encoderCheck = 0;
+		}
+
+		if (encoderCheck == 10) {
+//			encoderAlive = false;
+		}
+>>>>>>> 5283c166f4ac5e83fdb63a939805933682c96ae8
 
 		//Debugging
 		if (id == 1) {
 			SmartDashboard.putNumber("Motor AngleFR", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
+			System.out.println(this.speedCommand + "!!!!!!!!!!!!!!!!!!");
 		} else if (id == 2) {
 			SmartDashboard.putNumber("Motor AngleFL", Math.toDegrees(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset)))));
 		} else if (id == 3) {
