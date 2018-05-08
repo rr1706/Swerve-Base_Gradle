@@ -67,6 +67,7 @@ public class Robot extends TimedRobot {
 	private double smoothArc;
 	private double smoothRotate;
 	private boolean smoothRotateStarted = false;
+	private boolean smoothRotateChangeCheck = false;
 	private double smoothTranslate;
 	private double initialAngle;
 	private double initialError;
@@ -337,9 +338,9 @@ public class Robot extends TimedRobot {
 //				SmartDashboard.putNumber("RCW", RCW);
 
 				/*
-				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face (Maintain, not turn),
+				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 5 = How to translate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
-				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle, 8 = smoothRotate
+				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle
 				 * 9 = time out(seconds), 10 = imu offset
 				 *
 				 */
@@ -355,36 +356,26 @@ public class Robot extends TimedRobot {
 					STR = 0;
 				}
 
-				if (commands[arrayIndex][6] <= 360.0 && commands[arrayIndex][6] >= -360.0) {
+				if (commands[arrayIndex][6] <= 360.0 && commands[arrayIndex][6] >= 0.0) {
 					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][6], commands[arrayIndex][7], Math.abs(currentDistance - previousDistance)));
 					FWD = Math.cos(smoothArc);
 					STR = Math.sin(smoothArc);
 				}
 //				System.out.println(smoothArc);
 
-				if (commands[arrayIndex][8] <= 360.0 && commands[arrayIndex][8] >= -360.0) {
+				if (commands[arrayIndex][3] <= 360.0 && commands[arrayIndex][3] >= 0.0) {
 					double direction;
-					if (!smoothRotateStarted) {
-						initialError = MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][8]);
-						smoothRotateStarted = true;
-					}
-
-					smoothRotate = (MathUtils.convertRange(initialError, commands[arrayIndex][8], 0.0, 2.0, MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][8])));
-					direction = commands[arrayIndex][8]-initialAngle;
+					direction = commands[arrayIndex][3]-initialAngle;
 					if (Math.abs(direction) > 180.0) {
 						direction *= -1.0;
 					}
-					RCW = Math.signum(direction) * -Math.sqrt(0.25*smoothRotate)+0.75;
+					RCW = Math.signum(direction);
 
-					if (Math.abs(MathUtils.resolveDeg(imu.getAngle() - commands[arrayIndex][8])) < 5.0) {
+					if (Math.abs(MathUtils.resolveDeg(imu.getAngle() - commands[arrayIndex][3])) < 5.0) {
+						keepAngle = commands[arrayIndex][3];
+						initialAngle = imu.getAngle();
 						turnDone = true;
-						keepAngle = commands[arrayIndex][8];
 					}
-				} else {
-					smoothRotateStarted = false;
-					autonomousAngle = commands[arrayIndex][3];
-					initialAngle = imu.getAngle();
-					turnDone = true;
 				}
 
 //				System.out.println(MathUtils.resolveDeg(commands[arrayIndex][8]-initialAngle));
@@ -453,7 +444,7 @@ public class Robot extends TimedRobot {
 					turnDone = true;
 				}
 
-				if (driveDone && turnDone) {
+				if (driveDone) {
 					arrayIndex++;
 					driveDone = false;
 					previousDistance = currentDistance;
@@ -598,17 +589,6 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("STR", STR);
 		SmartDashboard.putNumber("RCW", RCW);
 
-//		//Optional Control Scheme. Imagine Twinstick Shooter
-//		if (fieldOriented) {
-//			if (xbox1.RStickX() + xbox1.RStickY() != 0.0) {
-//				SwerveCompensate.setInput(IMU.getAngle());
-//				SwerveCompensate.setSetpoint(keepAngle = MathUtils.resolveDeg(MathUtils.radToDeg(Math.atan2(xbox1.RStickY(), xbox1.RStickX())) + 90.0));
-//				RCW = SwerveCompensate.performPID();
-//			} else {
-//				RCW = 0.0;
-//			}
-//		} else {
-
 		// rotate clockwise command (-1.0 to 1.0)
 		// Limited to half speed because of wheel direction calculation issues when rotating quickly
 		// Let robot rotate at full speed if it is not translating
@@ -617,7 +597,6 @@ public class Robot extends TimedRobot {
 		} else {
 			RCW = xbox1.RStickX() * 0.5;
 		}
-//		}
 
 		keepAngle();
 
@@ -644,9 +623,7 @@ public class Robot extends TimedRobot {
 		} else {
 			System.out.println("Saving log file(s)");
 			log.writeFromQueue();
-
 		}
-
 	}
 
 	/**
