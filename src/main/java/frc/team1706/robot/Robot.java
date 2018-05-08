@@ -629,7 +629,7 @@ public class Robot extends TimedRobot {
 	}
 
 	public void robotPeriodic() {
-		currentDistance += MathUtils.getRobotDistance();
+		currentDistance += SwerveDrivetrain.getRobotDistance();
 		SmartDashboard.putNumber("Distance", currentDistance);
 	}
 

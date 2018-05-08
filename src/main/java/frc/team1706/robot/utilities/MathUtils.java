@@ -24,27 +24,6 @@ public class MathUtils {
 		return new Vector(x, y);
 	}
 
-	//Returns distance gone in last frame
-	public static double getRobotDistance() {
-		double[] xyDistFR = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
-		double[] xyDistFL = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
-		double[] xyDistBL = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
-		double[] xyDistBR = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
-
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
-
-		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
-		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
-
-		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/4.0;
-		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/4.0;
-
-		return pythagorean(xAvg, yAvg);
-	}
-
 	public static double reverseWheelDirection(double direction) {
 		if (direction > Math.PI) {
 			direction -= Math.PI;
