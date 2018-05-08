@@ -70,7 +70,10 @@ public class Robot extends TimedRobot {
 	private double smoothTranslate;
 	private double initialAngle;
 	private double initialError;
+<<<<<<< HEAD
 	private final double minSpeed = 0.2;
+=======
+>>>>>>> origin/master
 
 	private int dx = -1;
 
@@ -399,18 +402,24 @@ public class Robot extends TimedRobot {
 					FWD *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
 					STR *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
 				} else if (commands[arrayIndex][5] == 3) {
+<<<<<<< HEAD
 					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.5, currentDistance));
 					FWD *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
 					STR *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
 				} else {
 					FWD *= tSpeed;
 					STR *= tSpeed;
+=======
+					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.8, currentDistance));
+					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
+					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
+>>>>>>> origin/master
 				}
 
 				Vector driveCommands;
 				driveCommands = MathUtils.convertOrientation(Math.toRadians(imu.getAngle()), FWD, STR);
-				FWD = driveCommands.getY();
-				STR = driveCommands.getX();
+				FWD = driveCommands.getY() * tSpeed;
+				STR = driveCommands.getX() * tSpeed;
 				RCW *= rSpeed;
 
 				if ((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
