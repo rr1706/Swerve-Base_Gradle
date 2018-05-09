@@ -33,6 +33,7 @@ public class SwerveModule {
 	private double rightDelta;
 	private double forwardDelta;
 	private double currentAngle;
+	private boolean encoderAlive = true;
 
 	private double i;
 	private double j;
@@ -122,6 +123,10 @@ public class SwerveModule {
 
 		if (Math.abs(this.speedCommand) >= 0.1) {
 			rotationMotor.set(ControlMode.Position, z);
+		}
+
+		if (this.speedCommand > 0.1 && delta < 0.1) {
+			encoderAlive = false;
 		}
 
 		//Debugging
@@ -217,12 +222,21 @@ public class SwerveModule {
 		return rawError;
 	}
 
+	public boolean getEncoderAlive() {
+		return encoderAlive;
+	}
+
 	public double[] getXYDist() {
 		if (wheelReversed) {
 			forwardSum *= -1.0;
 			rightSum *= -1.0;
 		}
 		double[] i = {rightDelta, forwardDelta};
-		return i;
+		double[] j = {0.0, 0.0};
+		if (encoderAlive) {
+			return i;
+		} else {
+			return j;
+		}
 	}
 }

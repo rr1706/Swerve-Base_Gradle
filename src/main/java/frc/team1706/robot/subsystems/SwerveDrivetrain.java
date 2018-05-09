@@ -16,6 +16,7 @@ public class SwerveDrivetrain {
 	private static String[] FLPorts;
 	private static String[] BLPorts;
 	private static String[] BRPorts;
+	private static double encoders = 4.0;
 
 	public enum WheelType {
 		FRONT_RIGHT, FRONT_LEFT, BACK_LEFT, BACK_RIGHT
@@ -92,19 +93,17 @@ public class SwerveDrivetrain {
 			}
 		}
 
+		encoders = 0.0;
 		for (WheelType type : swerveModules.keySet()) {
 			SwerveModule wheel = swerveModules.get(type);
 
 			double speed = wheel.getSpeedCommand() / max; // normalized to maximum of 1
 			wheel.setSpeedCommand(speed);
-
-		}
-
-		for (WheelType type : swerveModules.keySet()) {
-			SwerveModule wheel = swerveModules.get(type);
-
 			wheel.drive();
 
+			if (wheel.getEncoderAlive()) {
+				encoders++;
+			}
 		}
 	}
 
@@ -123,8 +122,8 @@ public class SwerveDrivetrain {
 		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
 		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
 
-		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/4.0;
-		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/4.0;
+		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/encoders;
+		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/encoders;
 
 		return MathUtils.pythagorean(xAvg, yAvg);
 	}
