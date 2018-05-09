@@ -69,6 +69,9 @@ public class Robot extends TimedRobot {
 	private boolean smoothRotateStarted = false;
 	private boolean smoothRotateChangeCheck = false;
 	private double smoothTranslate;
+	private double smoothTranslateNum;
+	private double smoothAccelerate;
+	private double smoothAccelerateNum;
 	private double initialAngle;
 	private double initialError;
 	private final double minSpeed = 0.2;
@@ -339,9 +342,10 @@ public class Robot extends TimedRobot {
 
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
-				 * 4 = distance(in), 5 = How to translate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
-				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle
-				 * 9 = time out(seconds), 10 = imu offset
+				 * 4 = distance(in), 5 = How to accelerate(0 = no modification, 1 = smooth start and end, 2 = smooth start, 3 = smooth end)
+				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle, 8 = how to translate(0 = line, 1 = c*tan(z*x), 2 = c*tan(z*x^2))
+				 * 9 = c, 10 = z
+				 * 11 = time out(seconds), 12 = imu offset
 				 *
 				 */
 
@@ -361,7 +365,18 @@ public class Robot extends TimedRobot {
 					FWD = Math.cos(smoothArc);
 					STR = Math.sin(smoothArc);
 				}
-//				System.out.println(smoothArc);
+
+				if (commands[arrayIndex][8] == 1) {
+					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.44, 1.44, currentDistance));
+					smoothTranslate = commands[arrayIndex][9] * Math.tan(commands[arrayIndex][10] * smoothTranslateNum);
+					FWD = Math.cos(smoothTranslate);
+					STR = Math.sin(smoothTranslate);
+				} else if (commands[arrayIndex][8] == 2) {
+					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.2, 1.2, currentDistance));
+					smoothTranslate = commands[arrayIndex][9] * Math.pow(Math.tan(commands[arrayIndex][10] * smoothTranslateNum),2.0);
+					FWD = Math.cos(smoothTranslate);
+					STR = Math.sin(smoothTranslate);
+				}
 
 				if (commands[arrayIndex][3] <= 360.0 && commands[arrayIndex][3] >= 0.0) {
 					double direction;
@@ -384,17 +399,20 @@ public class Robot extends TimedRobot {
 //				System.out.println(RCW);
 
 				if (commands[arrayIndex][5] == 1) {
-					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -2.0, 1.8, currentDistance));
-					FWD *= 0.5*Math.cos(smoothTranslate)+0.5;
-					STR *= 0.5*Math.cos(smoothTranslate)+0.5;
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -2.0, 1.8, currentDistance));
+					smoothAccelerate = 0.5*Math.cos(smoothAccelerateNum)+0.5;
+					FWD *= smoothAccelerate;
+					STR *= smoothAccelerate;
 				} else if (commands[arrayIndex][5] == 2) {
-					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 0.2214, currentDistance));
-					FWD *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
-					STR *= (tSpeed-minSpeed)*Math.log(smoothTranslate+1)+minSpeed;
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 0.2214, currentDistance));
+					smoothAccelerate = (tSpeed-minSpeed)*Math.log(smoothAccelerateNum+1)+minSpeed;
+					FWD *= smoothAccelerate;
+					STR *= smoothAccelerate;
 				} else if (commands[arrayIndex][5] == 3) {
-					smoothTranslate = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.5, currentDistance));
-					FWD *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
-					STR *= -tSpeed*Math.log(smoothTranslate+1.0)+tSpeed;
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], 0.0, 1.5, currentDistance));
+					 smoothAccelerate = -tSpeed*Math.log(smoothAccelerateNum+1.0)+tSpeed;
+					FWD *= smoothAccelerate;
+					STR *= smoothAccelerate;
 				} else {
 					FWD *= tSpeed;
 					STR *= tSpeed;
@@ -421,13 +439,13 @@ public class Robot extends TimedRobot {
 //					System.out.println("AAA");
 //				}
 
-				if (Time.get() > timeBase + commands[arrayIndex][9] && commands[arrayIndex][9] > 0) {
+				if (Time.get() > timeBase + commands[arrayIndex][11] && commands[arrayIndex][11] > 0) {
 					override = true;
-				} else if (commands[arrayIndex][9] == 0) {
+				} else if (commands[arrayIndex][11] == 0) {
 					timeDone = true;
 				}
 
-				imuOffset = commands[arrayIndex][10];
+				imuOffset = commands[arrayIndex][12];
 
 				if (turnDone) {
 					keepAngle();
@@ -443,7 +461,6 @@ public class Robot extends TimedRobot {
 
 				if (override) {
 					driveDone = true;
-					turnDone = true;
 				}
 
 				if (driveDone) {
