@@ -349,6 +349,9 @@ public class Robot extends TimedRobot {
 				 *
 				 */
 
+				commands[arrayIndex][2] = MathUtils.resolveDeg(commands[arrayIndex][2] - commands[arrayIndex][12]);
+				commands[arrayIndex][3] = MathUtils.resolveDeg(commands[arrayIndex][3] - commands[arrayIndex][12]);
+
 				tSpeed = commands[arrayIndex][0];
 				rSpeed = commands[arrayIndex][1];
 
@@ -369,13 +372,13 @@ public class Robot extends TimedRobot {
 				if (commands[arrayIndex][8] == 1) {
 					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.44, 1.44, currentDistance));
 					smoothTranslate = commands[arrayIndex][9] * Math.tan(commands[arrayIndex][10] * smoothTranslateNum);
-					FWD = Math.cos(smoothTranslate);
-					STR = Math.sin(smoothTranslate);
+					FWD = Math.cos(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
+					STR = Math.sin(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
 				} else if (commands[arrayIndex][8] == 2) {
 					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.2, 1.2, currentDistance));
 					smoothTranslate = commands[arrayIndex][9] * Math.pow(Math.tan(commands[arrayIndex][10] * smoothTranslateNum),2.0);
-					FWD = Math.cos(smoothTranslate);
-					STR = Math.sin(smoothTranslate);
+					FWD = Math.cos(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
+					STR = Math.sin(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
 				}
 
 				if (commands[arrayIndex][3] <= 360.0 && commands[arrayIndex][3] >= 0.0) {
