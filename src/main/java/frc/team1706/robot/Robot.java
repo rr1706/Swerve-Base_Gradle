@@ -406,7 +406,7 @@ public class Robot extends TimedRobot {
 //				System.out.println(RCW);
 
 				if (commands[arrayIndex][5] == 1) {
-					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex-1][0], commands[arrayIndex+1][0], currentDistance));
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex][0], commands[arrayIndex+1][0], currentDistance));
 					smoothAccelerate = smoothAccelerateNum;
 					FWD *= smoothAccelerate;
 					STR *= smoothAccelerate;
