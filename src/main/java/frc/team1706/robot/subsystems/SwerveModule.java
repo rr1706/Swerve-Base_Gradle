@@ -125,9 +125,9 @@ public class SwerveModule {
 			rotationMotor.set(ControlMode.Position, z);
 		}
 
-		if (this.speedCommand > 0.1 && delta < 0.1) {
-			encoderAlive = false;
-		}
+//		if (this.speedCommand > 0.1 && delta < 0.1) {
+//			encoderAlive = false;
+//		}
 
 		//Debugging
 		if (id == 1) {
