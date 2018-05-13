@@ -37,7 +37,7 @@ public class MathUtils {
 	public static double getDelta(double num1, double num2) {
 		return num1 - num2;
 
-	}
+		}
 
 	public static double reverseErrorDirection(double error) {
 		if (error < 0.0) {
