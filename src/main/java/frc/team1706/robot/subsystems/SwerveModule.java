@@ -20,7 +20,8 @@ public class SwerveModule {
 	private double speedCommand;
 	private double angleCommand;
 	private double distance;
-	private double previousDistance = 0;
+	private double previousDistance = 0.0;
+	private double previousRobotDistance = 0.0;
 	private double delta;
 	private double angleError;
 	private double rightSum = 0;
@@ -123,6 +124,18 @@ public class SwerveModule {
 
 		if (Math.abs(this.speedCommand) >= 0.1) {
 			rotationMotor.set(ControlMode.Position, z);
+
+			// Set wheels to "X" shape
+		} else if (Robot.xbox1.DPad() != -1 || Robot.xbox2.LTrig() > 0.5) {
+			if (id == 1) {
+				rotationMotor.set(ControlMode.Position, /*MathUtils.resolvePot(*/384 - MathUtils.radToPot(offset) - i * 1024);
+			} else if (id == 2) {
+				rotationMotor.set(ControlMode.Position, /*MathUtils.resolvePot(*/128 - MathUtils.radToPot(offset) - i * 1024);
+			} else if (id == 3) {
+				rotationMotor.set(ControlMode.Position, /*MathUtils.resolvePot(*/384 - MathUtils.radToPot(offset) - i * 1024);
+			} else{
+				rotationMotor.set(ControlMode.Position, /*MathUtils.resolvePot(*/128 - MathUtils.radToPot(offset) - i * 1024);
+			}
 		}
 
 //		if (this.speedCommand > 0.1 && delta < 0.1) {
@@ -144,6 +157,7 @@ public class SwerveModule {
 		forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(currentAngle / 1024 * 360 - Math.toDegrees(offset))));
 
 		previousDistance = distance;
+		previousRobotDistance = SwerveDrivetrain.getRobotDistance();
 
 	}
 
@@ -222,10 +236,6 @@ public class SwerveModule {
 		return rawError;
 	}
 
-	public boolean getEncoderAlive() {
-		return encoderAlive;
-	}
-
 	public double[] getXYDist() {
 		if (wheelReversed) {
 			forwardSum *= -1.0;
@@ -233,10 +243,14 @@ public class SwerveModule {
 		}
 		double[] i = {rightDelta, forwardDelta};
 		double[] j = {0.0, 0.0};
-		if (encoderAlive) {
-			return i;
-		} else {
-			return j;
-		}
+//		if (encoderAlive) {
+		return i;
+//		} else {
+//			return j;
+//		}
+	}
+
+	public boolean getEncoderAlive() {
+		return encoderAlive;
 	}
 }

@@ -37,7 +37,7 @@ public class MathUtils {
 	public static double getDelta(double num1, double num2) {
 		return num1 - num2;
 
-		}
+	}
 
 	public static double reverseErrorDirection(double error) {
 		if (error < 0.0) {
@@ -119,6 +119,21 @@ public class MathUtils {
 			rad += Math.PI * 2;
 		}
 		return rad;
+	}
+
+	public static double resolvePot(double val) {
+		while (val >= 1024.0) {
+			val -= 1024.0;
+		}
+
+		while (val < 0) {
+			val += 1024.0;
+		}
+		return val;
+	}
+
+	public static double radToPot(double rad) {
+		return rad * 512 / Math.PI;
 	}
 
 	public static double resolveXrotAngle(double rad) {

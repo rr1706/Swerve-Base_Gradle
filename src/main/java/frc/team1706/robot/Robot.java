@@ -115,10 +115,6 @@ public class Robot extends TimedRobot {
 
 		SwerveCompensate.enable();
 
-		if (xbox1.DPad() != -1) {
-			keepAngle = xbox1.DPad();
-		}
-
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
 		lead = RCW * leadNum;
 
@@ -324,7 +320,6 @@ public class Robot extends TimedRobot {
 				if (Time.get() > timeBase + SmartDashboard.getNumber("Autonomous Delay", 0)) {
 					autoMove = 1;
 				}
-//				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 				previousDistance = currentDistance;
 
 				break;
@@ -332,8 +327,6 @@ public class Robot extends TimedRobot {
 
 			case 1:
 
-				SmartDashboard.putNumber("Array Index", arrayIndex);
-//				SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 //				SmartDashboard.putNumber("Array Index", arrayIndex);
 //				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
 //				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
@@ -344,9 +337,8 @@ public class Robot extends TimedRobot {
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 5 = How to accelerate(0 = no modification, 1 = transition, 2 = accelerate, 3 = decelerate)
-				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle, 8 = how to translate(0 = line, 1 = c*tan(z*x), 2 = c*tan(z*x^2))
-				 * 9 = c, 10 = z
-				 * 11 = time out(seconds), 12 = imu offset
+				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle,
+				 * 8 = time out(seconds), 9 = imu offset
 				 *
 				 */
 
@@ -373,21 +365,9 @@ public class Robot extends TimedRobot {
 					STR = Math.sin(smoothArc);
 				}
 
-				if (commands[arrayIndex][8] == 1) {
-					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.44, 1.44, currentDistance));
-					smoothTranslate = commands[arrayIndex][9] * Math.tan(commands[arrayIndex][10] * smoothTranslateNum);
-					FWD = Math.cos(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
-					STR = Math.sin(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
-				} else if (commands[arrayIndex][8] == 2) {
-					smoothTranslateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], -1.2, 1.2, currentDistance));
-					smoothTranslate = commands[arrayIndex][9] * Math.pow(Math.tan(commands[arrayIndex][10] * smoothTranslateNum),2.0);
-					FWD = Math.cos(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
-					STR = Math.sin(MathUtils.resolveAngle(smoothTranslate + Math.toRadians(commands[arrayIndex][2])));
-				}
-
 				keepAngle = commands[arrayIndex][3];
 //				if (commands[arrayIndex][3] <= 360.0 && commands[arrayIndex][3] >= 0.0 && !turnDone) {
-				System.out.println(Math.abs(Math.abs(MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][3]))));
+//				System.out.println(Math.abs(Math.abs(MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][3]))));
 					if (Math.abs(MathUtils.getAngleError(imu.getAngle(), commands[arrayIndex][3])) < 5.0) {
 						initialAngle = imu.getAngle();
 						turnDone = true;
@@ -406,17 +386,17 @@ public class Robot extends TimedRobot {
 //				System.out.println(RCW);
 
 				if (commands[arrayIndex][5] == 1) {
-					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex][0], commands[arrayIndex+1][0], currentDistance));
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex][0], commands[arrayIndex+1][0], SmartDashboard.getNumber("Distance", 0)));
 					smoothAccelerate = smoothAccelerateNum;
 					FWD *= smoothAccelerate;
 					STR *= smoothAccelerate;
 				} else if (commands[arrayIndex][5] == 2) {
-					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], minSpeed, commands[arrayIndex+1][0], currentDistance));
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], minSpeed, commands[arrayIndex][0], SmartDashboard.getNumber("Distance", 0)));
 					smoothAccelerate = smoothAccelerateNum;
 					FWD *= smoothAccelerate;
 					STR *= smoothAccelerate;
 				} else if (commands[arrayIndex][5] == 3) {
-					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex-1][0], minSpeed, currentDistance));
+					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex][0], minSpeed, SmartDashboard.getNumber("Distance", 0)));
 					 smoothAccelerate = smoothAccelerateNum;
 					FWD *= smoothAccelerate;
 					STR *= smoothAccelerate;
@@ -431,14 +411,14 @@ public class Robot extends TimedRobot {
 				STR = driveCommands.getX();
 				RCW *= rSpeed;
 
-				if ((Math.abs(currentDistance - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
+				if ((Math.abs(SmartDashboard.getNumber("Distance", 0) - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
 					driveDone = true;
 					STR = 0;
 					FWD = 0;
 				}
 
-//				System.out.println(Math.abs(currentDistance - previousDistance));
-//				System.out.println(currentDistance + " | " + previousDistance);
+				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
+				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
 
 				SwerveCompensate.setTolerance(1);
 //				if ((SwerveCompensate.onTarget() || commands[arrayIndex][3] == -1) && !(commands[arrayIndex][8] <= 360.0 && commands[arrayIndex][8] >= -360.0)) {
@@ -447,13 +427,13 @@ public class Robot extends TimedRobot {
 //					System.out.println("AAA");
 //				}
 
-				if (Time.get() > timeBase + commands[arrayIndex][11] && commands[arrayIndex][11] > 0) {
+				if (Time.get() > timeBase + commands[arrayIndex][8] && commands[arrayIndex][8] > 0) {
 					override = true;
-				} else if (commands[arrayIndex][11] == 0) {
+				} else if (commands[arrayIndex][8] == 0) {
 					timeDone = true;
 				}
 
-				imuOffset = commands[arrayIndex][12];
+				imuOffset = commands[arrayIndex][9];
 
 				if (turnDone) {
 					keepAngle();
@@ -471,12 +451,14 @@ public class Robot extends TimedRobot {
 
 				if (override) {
 					driveDone = true;
+					turnDone = true;
 				}
 
 				if (driveDone) {
 					arrayIndex++;
 					driveDone = false;
-					previousDistance = currentDistance;
+					initialAngle = imu.getAngle();
+					previousDistance = SmartDashboard.getNumber("Distance", 0);//currentDistance;
 					turnDone = false;
 					timeDone = false;
 					override = false;

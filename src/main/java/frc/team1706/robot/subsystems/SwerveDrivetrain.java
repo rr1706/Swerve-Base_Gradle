@@ -109,21 +109,26 @@ public class SwerveDrivetrain {
 
 	//Returns distance gone in last frame
 	public static double getRobotDistance() {
-		double[] xyDistFR = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
-		double[] xyDistFL = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
-		double[] xyDistBL = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
-		double[] xyDistBR = SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
+		double[] xyDistFR = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).getXYDist();
+		double[] xyDistBL = swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).getXYDist();
+		double[] xyDistFL = swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).getXYDist();
+		double[] xyDistBR = swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).getXYDist();
 
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
-		SwerveDrivetrain.swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
+		SmartDashboard.putNumber("FR DistX", xyDistFR[0]);
+		SmartDashboard.putNumber("FL DistX", xyDistFL[0]);
+		SmartDashboard.putNumber("BR DistX", xyDistBR[0]);
+		SmartDashboard.putNumber("BL DistX", xyDistBL[0]);
+
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDelta();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDelta();
 
 		SmartDashboard.putNumber("XoverT", (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0]));
 		SmartDashboard.putNumber("YoverT", (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1]));
 
-		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/encoders;
-		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/encoders;
+		double xAvg = (xyDistFR[0] + xyDistFL[0] + xyDistBL[0] + xyDistBR[0])/4.0;
+		double yAvg = (xyDistFR[1] + xyDistFL[1] + xyDistBL[1] + xyDistBR[1])/4.0;
 
 		return MathUtils.pythagorean(xAvg, yAvg);
 	}
