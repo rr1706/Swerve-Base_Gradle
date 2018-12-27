@@ -2,14 +2,17 @@ package frc.team1706.robot.utilities;
 
 /**
  * Various math functions
- *
- * @author team1706
  */
 public class MathUtils {
 
 	/**
 	 * Converts from field-oriented driving commands to robot-oriented
 	 * commands to allow the driver to drive field oriented
+	 * @param currentHeading Where the robot is currently facing
+	 * @param fwd Field-Oriented Forward command
+	 * @param str Feild-Oriented Strafe command
+	 *
+	 * @return The new STR and FWD commands for the robot
 	 */
 	public static Vector convertOrientation(double currentHeading, double fwd, double str) {
 		double x;
@@ -21,21 +24,35 @@ public class MathUtils {
 		return new Vector(x, y);
 	}
 
+	/**
+	 * Reverses the direction of a wheel
+	 * @param direction Direction of wheel in radians
+	 * @return new direction
+	 */
 	public static double reverseWheelDirection(double direction) {
 		if (direction > Math.PI) {
 			direction -= Math.PI;
 		} else {
 			direction += Math.PI;
 		}
-
 		return direction;
 	}
 
+	/**
+	 * Returns the delta of two numbers
+	 * @param num1 First number
+	 * @param num2 Second number
+	 * @return Delta
+	 */
 	public static double getDelta(double num1, double num2) {
 		return num1 - num2;
-
 	}
 
+	/**
+	 * Reverses the error of a wheel
+	 * @param error Error of wheel in radians
+	 * @return reversed error
+	 */
 	public static double reverseErrorDirection(double error) {
 		if (error < 0.0) {
 			error += Math.PI;
@@ -45,6 +62,15 @@ public class MathUtils {
 		return error;
 	}
 
+	/**
+	 * Return the equivilant value between two different ranges
+	 * @param oldMin Minimum of previous range
+	 * @param oldMax Maximum of previous range
+	 * @param newMin Minimum of new range
+	 * @param newMax Maximum of new range
+	 * @param oldValue Value in old range
+	 * @return The value in the new range
+	 */
 	public static double convertRange(double oldMin, double oldMax, double newMin, double newMax, double oldValue) {
 		double oldRange = (oldMax - oldMin);
 		double newRange = (newMax - newMin);
@@ -53,6 +79,12 @@ public class MathUtils {
 		return newValue;
 	}
 
+	/**
+	 * Calculates the error between a sensor and desired direction
+	 * @param direction Direction in radians
+	 * @param sensor Sensor in radians
+	 * @return Error
+	 */
 	public static double calculateError(double direction, double sensor) {
 		double error = direction - sensor;
 		if (Math.abs(error) > 5.236) { // 300 Degrees
@@ -67,6 +99,8 @@ public class MathUtils {
 
 	/**
 	 * Converts a number from radians to degrees
+	 * @param x radians
+	 * @return Degrees
 	 */
 	public static double radToDeg(double x) {
 		return x * 180.0 / Math.PI;
@@ -74,25 +108,48 @@ public class MathUtils {
 
 	/**
 	 * Converts a number from degrees to radians
+	 * @param x degrees
+	 * @return Radians
 	 */
 	public static double degToRad(double x) {
 		return x * Math.PI / 180;
 	}
 
+	/**
+	 * Converts a number from meters to inches
+	 * @param x meters
+	 * @return Inches
+	 */
 	public static double meterToInch(double x) {
 		return x * 39.3701;
 	}
 
+	/**
+	 * Converts a number from inches to meters
+	 * @param x inches
+	 * @return Meters
+	 */
 	public static double inchToMeter(double x) {
 		return x / 39.3701;
 	}
 
+	/**
+	 * Return the length of the long side of a right triangle
+	 * @param a length of one side of triangle
+	 * @param b length of second side of triangle
+	 * @return Length of the long side of a right triangle
+	 */
 	public static double pythagorean(double a, double b) {
 		double c = Math.sqrt((Math.pow(a, 2) + Math.pow(b, 2)));
 
 		return c;
 	}
 
+	/**
+	 * Unwraps a degree to be between 0 and 360
+	 * @param deg degrees
+	 * @return degree from 0 to 360
+	 */
 	public static double resolveDeg(double deg) {
 		while (deg > 360) {
 			deg -= 360;
@@ -106,7 +163,9 @@ public class MathUtils {
 	}
 
 	/**
-	 * Unwraps angles to be between 0 and 2pi
+	 * Unwraps a radian to be between 0 and 2pi
+	 * @param rad radians
+	 * @return radian from 0 to 2pi
 	 */
 	public static double resolveAngle(double rad) {
 		while (rad >= Math.PI * 2) {
@@ -117,33 +176,5 @@ public class MathUtils {
 			rad += Math.PI * 2;
 		}
 		return rad;
-	}
-
-	public static double resolveXrotAngle(double rad) {
-		while (rad >= Math.PI) {
-			rad -= Math.PI * 2;
-		}
-
-		while (rad < -Math.PI) {
-			rad += Math.PI * 2;
-		}
-		return rad;
-	}
-
-	public static boolean lessThan(double currAngle, double searchLim) {
-		if (currAngle > 180) {
-			currAngle -= 360;
-		}
-
-		if (searchLim > 180) {
-			searchLim -= 360;
-		}
-
-		if (currAngle < searchLim) {
-			return true;
-		} else {
-			return false;
-		}
-
 	}
 }

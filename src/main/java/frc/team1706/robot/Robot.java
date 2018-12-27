@@ -17,7 +17,6 @@ import frc.team1706.robot.utilities.MathUtils;
 import frc.team1706.robot.utilities.PIDController;
 import frc.team1706.robot.utilities.Vector;
 
-import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -27,23 +26,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * resource directory.
  */
 public class Robot extends TimedRobot {
-
-	private SendableChooser<Integer> autoChooser;
-
 	private Compressor compressor;
 
 	public static XboxController xbox1 = new XboxController(0);
 	public static XboxController xbox2 = new XboxController(1);
 
 //	private JetsonServer jet;
-	private Thread t;
+//	private Thread t;
 	private SwerveDrivetrain driveTrain;
 	private IMU imu;
 	private RRLogger log;
 
 	private boolean robotBackwards;
-
-	private double robotOffset;
 
 	private int disabled = 0;
 
@@ -55,23 +49,19 @@ public class Robot extends TimedRobot {
 	private double tSpeed;
 	private double rSpeed;
 	private double PIDSpeed;
-	private double initialPitch;
 	private double previousDistance;
 	private double currentDistance;
-	private double currentTime = 0;
 	private boolean driveDone;
 	private boolean turnDone;
 	private boolean timeDone;
 	private boolean collisionDone;
 	private boolean moonDone;
-	private double offsetDeg;
-	private double prevOffset = 0;
 	private double timeBase;
 	private boolean timeCheck;
 
 	private int dx = -1;
 
-	public static double FWD;
+	private double FWD;
 	private double STR;
 	private double RCW;
 
@@ -84,26 +74,12 @@ public class Robot extends TimedRobot {
 
 	private boolean autonomous;
 
-	private double prevVoltTime = 0;
-	private double currentVoltTime = 0;
-
 	private boolean fieldOriented = true; // start on field orientation
 	private boolean previousOrientedButton = false;
 	private boolean currentOrientedButton = false;
 
-	private boolean slow = false;
-	private boolean previousSlowButton = false;
-	private boolean currentSlowButton = false;
-
-	private boolean releasePlatform = false;
-	private boolean prevEndGame = false;
-
-	private double command = 0;
-
 	private PIDController SwerveCompensate;
 	private PIDController AutoTranslate;
-
-	private double lead;
 
 	private double robotRotation;
 
@@ -127,11 +103,8 @@ public class Robot extends TimedRobot {
 		}
 
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
-		lead = RCW * leadNum;
 
 		SmartDashboard.putNumber("DPAD", xbox1.DPad());
-
-//		System.out.println(Math.abs(xbox1.LStickX()));
 
 		// This will update the angle to keep the robot's orientation
 		if (Math.abs(xbox1.RStickX()) > 0.05 || // If right stick is pressed
@@ -231,7 +204,9 @@ public class Robot extends TimedRobot {
 //			throw new RuntimeException(e);
 //		}
 
- 		compressor = new Compressor(0);
+		SendableChooser<Integer> autoChooser;
+
+		compressor = new Compressor(0);
 
 		Time.start();
 
@@ -278,14 +253,6 @@ public class Robot extends TimedRobot {
 
 		timeCheck = true;
 		imu.reset(0);
-
-		autonomousChoice = autoChooser.getSelected();
-		autoOrderChoice = (int) SmartDashboard.getNumber("AutoOrder", 0);
-		autoForward = (int) SmartDashboard.getNumber("AutoForwardOnly", 0);
-		autoSameSide = (int) SmartDashboard.getNumber("AutoSameSideOnly", 0);
-		autoMultiScale = (int) SmartDashboard.getNumber("MultiScale", 0);
-		autoSwitchOnly = (int) SmartDashboard.getNumber("Switch Only (mid)", 0);
-		autoSingleScale = (int) SmartDashboard.getNumber("SingleScale", 0);
 
 		String choice;
 
@@ -596,13 +563,6 @@ public class Robot extends TimedRobot {
 		double headingDeg = imu.getAngle();
 		double headingRad = MathUtils.degToRad(headingDeg);
 
-		currentSlowButton = xbox1.Start();
-		if (currentSlowButton && !previousSlowButton) {
-			slow = !slow;
-
-		}
-		previousSlowButton = currentSlowButton;
-
 		currentOrientedButton = xbox1.A();
 		if (currentOrientedButton && !previousOrientedButton) {
 			fieldOriented = !fieldOriented;
@@ -639,11 +599,6 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("FWD", FWD);
 		SmartDashboard.putNumber("STR", STR);
 		SmartDashboard.putNumber("RCW", RCW);
-
-		if (slow) {
-			STR /= 2;
-			FWD /= 2;
-		}
 
 		if (FWD + STR == 0.0) {
 			RCW = xbox1.RStickX();
