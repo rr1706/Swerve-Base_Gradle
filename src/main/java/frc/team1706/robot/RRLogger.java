@@ -7,16 +7,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * @// FIXME: 12/27/2018 Just remake this entirely
+ */
 public class RRLogger {
 
 	private ConcurrentLinkedQueue<String> m_PowerBuffer = new ConcurrentLinkedQueue<String>();
 	private ConcurrentLinkedQueue<String> m_DataBuffer = new ConcurrentLinkedQueue<String>();
 	private PrintWriter m_LogFile;
 	private PrintWriter m_DataLogFile;
-	private String directory = "/home/lvuser/logs/"; // TODO THIS IS ACTUAL
+	private String directory = "/home/lvuser/logs/";
 	private String logFileName = "power";
 	private String dataDumpFileName = "data";
-	public long startTime;
+	private long startTime;
 
 	public void start() {
 		startTime = System.nanoTime();
@@ -30,7 +33,7 @@ public class RRLogger {
 				test = new File(directory + logFileName + "_" + i + ".csv");
 				i++;
 			} while (test.exists() && !test.isDirectory());
-			f.renameTo(test); // Renames log file if exists instead of rewriting
+				f.renameTo(test); // Renames log file if exists instead of rewriting
 			try {
 				f = new File(directory + logFileName + ".csv");
 				f.createNewFile();
@@ -45,43 +48,18 @@ public class RRLogger {
 			}
 		}
 
-		f = new File(directory + dataDumpFileName + ".csv");
-		if (f.exists() && !f.isDirectory()) { // check if file exists
-			System.out.println("1");
-			System.out.println(f);
-			int i = 1;
-			File test = null;
-			do {
 
-				test = new File(directory + dataDumpFileName + "_" + i + ".csv");
-				i++;
-			} while (test.exists() && !test.isDirectory());
-			f.renameTo(test); // TODO Test this but it should rename log file if exists instead of rewriting
-			try {
-				f = new File(directory + dataDumpFileName + ".csv");
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("2");
-			System.out.println(f);
-			try {
-				f.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
 		try {
-			m_LogFile = new PrintWriter(new BufferedWriter(new FileWriter(directory + logFileName + ".csv", true)));
+			m_LogFile = new PrintWriter(new BufferedWriter(new FileWriter(directory + logFileName + ".csv", false)));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			m_DataLogFile = new PrintWriter(new BufferedWriter(new FileWriter(directory + dataDumpFileName + ".csv", true)));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+//		try {
+//			m_DataLogFile = new PrintWriter(new BufferedWriter(new FileWriter(directory + dataDumpFileName + ".csv", true)));
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		System.out.println("Done constructing logger");
 	}
 
@@ -98,7 +76,7 @@ public class RRLogger {
 			additionalComment = new String();
 		}
 		String sep = ",";
-		String str = dataType + sep + ((double) (System.nanoTime() - startTime) / 1000000000.0) + sep + value + sep + additionalComment;
+		String str = dataType + sep + value + sep + ((double) (System.nanoTime() - startTime) / 1000000000.0) + sep + additionalComment;
 		m_DataBuffer.add(str);
 
 	}
@@ -106,7 +84,7 @@ public class RRLogger {
 	public void addPower(String dataType, double value) {
 
 		String sep = ",";
-		String str = dataType + sep + ((double) (System.nanoTime() - startTime) / 1000000000.0) + sep + value;
+		String str = dataType + sep + value + sep + ((double) (System.nanoTime() - startTime) / 1000000000.0);
 		m_PowerBuffer.add(str);
 
 	}

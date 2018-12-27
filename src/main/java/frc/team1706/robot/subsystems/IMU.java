@@ -7,22 +7,20 @@ import com.kauailabs.navx.frc.AHRS; // http://www.pdocs.kauailabs.com/navx-mxp/
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 
+/**
+ * Communicates with navX-MXP
+ */
 public class IMU {
-	private static AHRS ahrs;
+	private AHRS ahrs;
 
 	private double previousAccelX;
 	private double previousAccelY;
 
-	private double currentAccelX;
-	private double currentAccelY;
+	private double offset = 0;
 
-	private double jerkX;
-	private double jerkY;
-
-	private double collisionThreshold = 2.1;
-
-	private static double offset = 0;
-
+	/**
+	 * Connects to the navX
+	 */
 	public void IMUInit() {
 		try {
 			/*
@@ -35,25 +33,24 @@ public class IMU {
 		}
 	}
 
+	/**
+	 * @return Angle in degrees
+	 */
 	public double getAngle() {
-		//This returns degrees (0 to 360)
 		return MathUtils.resolveDeg(ahrs.getYaw() + offset);
 	}
 
-	public double getVelocity() {
-		return Math.sqrt((Math.pow(ahrs.getVelocityX(), 2) + Math.pow(ahrs.getVelocityY(), 2)));
-	}
-
-	public double getDistance() {
-		return MathUtils.meterToInch(Math.sqrt(Math.pow(ahrs.getDisplacementX(), 2) + Math.pow(ahrs.getDisplacementY(), 2)));
-	}
-
-	public void resetDistance() {
-		ahrs.resetDisplacement();
-	}
-
+	/**
+	 * @return If a collision has been detected
+	 */
 	public boolean collisionDetected() {
-		boolean collisionDetected = false;
+		double currentAccelX;
+		double currentAccelY;
+
+		double jerkX;
+		double jerkY;
+
+		double collisionThreshold = 2.1;
 
 		currentAccelX = ahrs.getWorldLinearAccelX();
 		jerkX = currentAccelX - previousAccelX;
@@ -62,26 +59,21 @@ public class IMU {
 		jerkY = currentAccelY - previousAccelY;
 		previousAccelY = currentAccelY;
 
-		if ((Math.abs(jerkX) > collisionThreshold) || (Math.abs(jerkY) > collisionThreshold)) {
-			collisionDetected = true;
-		}
-
-		return collisionDetected;
+		return ((Math.abs(jerkX) > collisionThreshold) || (Math.abs(jerkY) > collisionThreshold));
 	}
 
-	public double getVelocityX() {
-		return ahrs.getVelocityX();
-	}
-
-	public double getVelocityY() {
-		return ahrs.getVelocityY();
-	}
-
+	/**
+	 * Resets IMU angle to 0
+	 */
 	public void reset(int offset) {
 		ahrs.reset();
 		setOffset(offset);
 	}
 
+	/**
+	 * sets this.offset to offset
+	 * @param offset
+	 */
 	public void setOffset(double offset) {
 		this.offset = offset;
 	}

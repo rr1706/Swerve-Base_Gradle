@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 /**
  * Code to send/receive UDP packets to/from the Jetson
- * @author Connor Monahan
  */
 public class JetsonServer implements Runnable {
 

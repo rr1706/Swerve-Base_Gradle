@@ -64,7 +64,9 @@ public class PIDController {
 			m_error = m_setpoint - m_input;
 
 			// !!!!DEBUG!!!
-			// System.out.println(m_setpoint);
+//			 System.out.println(m_error);
+//			 System.out.println(m_setpoint);
+//			 System.out.println(m_input);
 
 			// If continuous is set to true allow wrap around
 			if (m_continuous) {

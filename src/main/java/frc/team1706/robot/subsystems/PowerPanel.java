@@ -2,10 +2,16 @@ package frc.team1706.robot.subsystems;
 
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 
+/**
+ * Communicates with the Power Panel
+ */
 public class PowerPanel {
 	private static PowerDistributionPanel pdp = new PowerDistributionPanel();
 
-	// Everything return amps
+	/**
+	 * @return Amperage of channel
+	 * applies to all
+	 */
 	public static double zero() {
 		return pdp.getCurrent(0);
 	}
