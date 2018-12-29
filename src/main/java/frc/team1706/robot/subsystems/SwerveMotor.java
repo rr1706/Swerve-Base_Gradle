@@ -22,9 +22,20 @@ class SwerveMotor {
      * @param rotationCommand Moves wheel clockwise
      */
     void set(double speedCommand, double rotationCommand){
-        // TODO adjust for when commands go above 1 or below -1
         double clockwiseCommand = speedCommand + rotationCommand;
         double counterCommand = speedCommand - rotationCommand;
+        double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
+        double counterOvershoot = Math.abs(counterCommand) - 1;
+
+        if (clockwiseOvershoot > 0) {
+            clockwiseCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
+            counterCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
+        }
+
+        if (counterOvershoot > 0) {
+            counterCommand -= counterOvershoot * Math.signum(counterCommand);
+            clockwiseCommand -= counterOvershoot * Math.signum(counterCommand);
+        }
 
         clockwiseMotor.set(clockwiseCommand);
         counterMotor.set(counterCommand);
