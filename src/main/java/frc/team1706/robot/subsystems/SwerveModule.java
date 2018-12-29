@@ -4,11 +4,15 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Talon;
 
+import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team1706.robot.utilities.MathUtils;
+import frc.team1706.robot.utilities.PIDController;
 import frc.team1706.robot.utilities.Vector;
 
 /**
@@ -24,46 +28,51 @@ public class SwerveModule {
 	private double angleError;
 	private double rightSum = 0;
 	private double forwardSum = 0;
-	private Talon translationMotor;
-	private TalonSRX rotationMotor;
+	private SwerveMotor swerveMotor;
 	private Encoder encoder;
+	private AnalogPotentiometer potentiometer;
+	private PIDController anglePID;
+	private double angle;
 	private boolean wheelReversed;
 
 	private int id;
 
 	/**
-	 *
+	 * @param pwmPortC Port of the motor that moves the wheel Clockwise
+	 * @param pwmPortCC Port of the motor that moves the wheel CounterClockwise
+	 * @param encoderPort1 Port 1 of the Encoder
+	 * @param encoderPort2 Port 2 of the Encoder
 	 */
-	SwerveModule(int pwmPortT, int pwmPortR, int encoderPort1, int encoderPort2) {
+	SwerveModule(int pwmPortC, int pwmPortCC, int encoderPort1, int encoderPort2, int potPort) {
 		super();
 
-		translationMotor = new Talon(pwmPortT);
-		rotationMotor = new TalonSRX(pwmPortR);
-		rotationMotor. configSelectedFeedbackSensor( FeedbackDevice.Analog, 0, 0);
-		rotationMotor.config_kF(0, 0.0, 0);
-		rotationMotor.config_kP(0, 22, 0);
-		rotationMotor.config_kI(0, 0.0, 0);
-		rotationMotor.config_kD(0, 0.0, 0);
-		rotationMotor. configAllowableClosedloopError (0, 2, 0);
-		rotationMotor.setSensorPhase(true);
+		SwerveMotor swerveMotor = new SwerveMotor(pwmPortC, pwmPortCC);
 
 		encoder = new Encoder(encoderPort1, encoderPort2, false, Encoder.EncodingType.k4X);
 		encoder.setDistancePerPulse(0.04);
+
+		potentiometer = new AnalogPotentiometer(potPort, 360.0);
+
+		anglePID = new PIDController(1.0, 0.0, 0.0);
+		anglePID.setContinuous();
+		anglePID.setInputRange(0.0, 360.0);
+		anglePID.setOutputRange(-1.0, 1.0);
+
 	}
 
 	void drive() {
-		double i;
-		double j;
-		double k;
-		double z;
-
 		double delta;
 		double rightDelta;
 		double forwardDelta;
 
 		distance = encoder.getDistance();
 
-		angleError = rotationMotor.getClosedLoopError(0);
+		angle = potentiometer.get();
+
+		anglePID.setInput(angle);
+		anglePID.setSetpoint(angleCommand);
+
+		angleError = anglePID.getError();
 
 		if (wheelReversed) {
 			delta = previousDistance - distance;
@@ -75,32 +84,16 @@ public class SwerveModule {
 			angleError = 0;
 		}
 
-		//Count rotation cycles of wheel
-		i = Math.floor(rotationMotor.getSensorCollection().getAnalogIn() / 1024.0);
-		//Set command + rotations (wrap command)
-		j = this.angleCommand + i * 1024;
-		//Set wrapped command - current position (error)
-		k = j - rotationMotor.getSensorCollection().getAnalogIn();
-
 		/*
-		 * If the error is greater than 512 units (180 degrees), have wheel go to next
-		 * cycle so it doesn't jump back to beginning of current cycle
-		 */
-		if (Math.abs(k) > 512) {
-			z = -(j - Math.signum(k) * 1024);
-		} else {
-			z = -j;
-		}
-
-		/*
-		 * If the wheel has to move over 256 units (45 degrees)
+		 * If the wheel has to move over 45 degrees
 		 * go opposite to command and reverse translation
 		 */
-		if (Math.abs(MathUtils.getDelta(-z, rotationMotor.getSensorCollection().getAnalogIn())) > 256) {
-			z += Math.signum(MathUtils.getDelta(-z, rotationMotor.getSensorCollection().getAnalogIn())) * 512;
-			wheelReversed = true;
+		if (Math.abs(angleError) > 45.0) {
+			this.angleCommand = MathUtils.reverseWheelDirection(this.angleCommand);
 			this.speedCommand *= -1;
+			angleError = MathUtils.reverseErrorDirection(angleError);
 
+			wheelReversed = true;
 		} else {
 			wheelReversed = false;
 		}
@@ -109,28 +102,25 @@ public class SwerveModule {
 		 * If wheel direction has to change more than 128 units (22.5 degrees)
 		 * then set wheel speed command to 0 while wheel is turning.
 		 */
-		if (Math.abs(angleError) < 128) {
-			translationMotor.set(this.speedCommand);
-		} else {
-			translationMotor.set(0.0);
+		if (Math.abs(angleError) > 128) {
+			speedCommand = 0.0;
 		}
 
+		/*
+		 * If wheel is not translating, don't rotate
+		 */
 		if (Math.abs(this.speedCommand) >= 0.1) {
-			rotationMotor.set(ControlMode.Position, z);
-
+			anglePID.setSetpoint(angle);
 		}
+
+		swerveMotor.set(speedCommand, anglePID.performPID());
 
 		// Debug
 //		if (id == 1) {
-//			SmartDashboard.putNumber("Error", rotationMotor.getClosedLoopError(0));
-//			SmartDashboard.putNumber("Motor Angle", rotationMotor.getSelectedSensorPosition(0));
+//			SmartDashboard.putNumber("Error", angleError);
+//			SmartDashboard.putNumber("Motor Angle", angle);
 //			SmartDashboard.putNumber("Joystick Command", this.angleCommand);
-//			SmartDashboard.putNumber("Wheel Cycle", i);
-//			SmartDashboard.putNumber("Pre Angle Command", j);
-//			SmartDashboard.putNumber("Error", k);
-//			SmartDashboard.putNumber("Angle Command", -z);
 //
-//			System.out.println(this.angleCommand+","+i+","+j+","+k+","+z+","+rotationMotor.getClosedLoopError(0)+","+rotationMotor.getSelectedSensorPosition(0)+","+SmartDashboard.getNumber("2018 SRX Test", 0));
 //		}
 
 		rightDelta = delta * Math.sin(MathUtils.degToRad(angleCommand));
@@ -147,18 +137,8 @@ public class SwerveModule {
 		this.id = id;
 	}
 
-	// for testing wiring only
-	public void setDirectRotateCommand(double command) {
-		rotationMotor.set(ControlMode.PercentOutput, -command);
-	}
-
-	// for testing wiring only
-	public void setDirectTranslateCommand(double command) {
-		translationMotor.set(command);
-	}
-
 	public double getAngle() {
-		return MathUtils.convertRange(0, 1024, 0, 360, rotationMotor.getSensorCollection().getAnalogIn());
+		return this.angle;
 	}
 
 	void setSpeedCommand(double speedCommand) {

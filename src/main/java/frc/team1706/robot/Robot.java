@@ -647,6 +647,8 @@ public class Robot extends TimedRobot {
 		System.out.println("BR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle()));
 		System.out.println("FR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle()));
 
+		// TODO remake for new modules
+		/*
 		// Move a single motor from the drivetrain depending on Dpad and right stick
 		if (dx == 0) {
 			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(speed);
@@ -743,5 +745,6 @@ public class Robot extends TimedRobot {
 			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
 			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
 		}
+		*/
 	}
 }
