@@ -19,6 +19,8 @@ import frc.team1706.robot.utilities.Vector;
  * A swerve module.
  */
 public class SwerveModule {
+	private static final double TICKS_PER_REVOLUTION = 360.0;
+
 	private Vector position;
 	private double offset;
 	private double speedCommand;
@@ -29,8 +31,6 @@ public class SwerveModule {
 	private double rightSum = 0;
 	private double forwardSum = 0;
 	private SwerveMotor swerveMotor;
-	private Encoder encoder;
-	private AnalogPotentiometer potentiometer;
 	private PIDController anglePID;
 	private double angle;
 	private boolean wheelReversed;
@@ -40,18 +40,11 @@ public class SwerveModule {
 	/**
 	 * @param pwmPortC Port of the motor that moves the wheel Clockwise
 	 * @param pwmPortCC Port of the motor that moves the wheel CounterClockwise
-	 * @param encoderPort1 Port 1 of the Encoder
-	 * @param encoderPort2 Port 2 of the Encoder
 	 */
-	SwerveModule(int pwmPortC, int pwmPortCC, int encoderPort1, int encoderPort2, int potPort) {
+	SwerveModule(int pwmPortC, int pwmPortCC) {
 		super();
 
-		SwerveMotor swerveMotor = new SwerveMotor(pwmPortC, pwmPortCC);
-
-		encoder = new Encoder(encoderPort1, encoderPort2, false, Encoder.EncodingType.k4X);
-		encoder.setDistancePerPulse(0.04);
-
-		potentiometer = new AnalogPotentiometer(potPort, 360.0);
+		swerveMotor = new SwerveMotor(pwmPortC, pwmPortCC);
 
 		anglePID = new PIDController(1.0, 0.0, 0.0);
 		anglePID.setContinuous();
@@ -65,9 +58,9 @@ public class SwerveModule {
 		double rightDelta;
 		double forwardDelta;
 
-		distance = encoder.getDistance();
+		distance = swerveMotor.getDistance();
 
-		angle = potentiometer.get();
+		angle = swerveMotor.getAngle();
 
 		anglePID.setInput(angle);
 		anglePID.setSetpoint(angleCommand);
@@ -88,7 +81,7 @@ public class SwerveModule {
 		 * If the wheel has to move over 45 degrees
 		 * go opposite to command and reverse translation
 		 */
-		if (Math.abs(angleError) > 45.0) {
+		if (Math.abs(angleError) > TICKS_PER_REVOLUTION/8.0) {
 			this.angleCommand = MathUtils.reverseWheelDirection(this.angleCommand);
 			this.speedCommand *= -1;
 			angleError = MathUtils.reverseErrorDirection(angleError);
@@ -99,10 +92,10 @@ public class SwerveModule {
 		}
 
 		/*
-		 * If wheel direction has to change more than 128 units (22.5 degrees)
+		 * If wheel direction has to change more than 22.5 degrees
 		 * then set wheel speed command to 0 while wheel is turning.
 		 */
-		if (Math.abs(angleError) > 128) {
+		if (Math.abs(angleError) > TICKS_PER_REVOLUTION/16) {
 			speedCommand = 0.0;
 		}
 
@@ -182,7 +175,7 @@ public class SwerveModule {
 	}
 
 	public void resetDistance() {
-		encoder.reset();
+		swerveMotor.reset();
 	}
 
 	public boolean getReversed() {

@@ -1,10 +1,20 @@
 package frc.team1706.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Talon;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
+import com.ctre.phoenix.motorcontrol.SensorTerm;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+
+import frc.team1706.robot.utilities.MathUtils;
 
 class SwerveMotor {
-    private Talon clockwiseMotor;
-    private Talon counterMotor;
+    private static final int POSITION_MOTION_MAGIC_IDX = 0;
+    private static final int REMOTE_0 = 0;
+    private static final int TIMEOUT = 10;
+    public static final int STEERING_COUNTS_PER_REV = 800;
+
+    private WPI_TalonSRX clockwiseMotor;
+    private WPI_TalonSRX counterMotor;
 
     /**
      *
@@ -12,8 +22,16 @@ class SwerveMotor {
      * @param pwmPortCC Port of the motor that moves the wheel CounterClockwise
      */
     SwerveMotor(int pwmPortC, int pwmPortCC){
-        clockwiseMotor = new Talon(pwmPortC);
-        counterMotor = new Talon(pwmPortCC);
+        clockwiseMotor = new WPI_TalonSRX(pwmPortC);
+        counterMotor = new WPI_TalonSRX(pwmPortCC);
+
+        //set (M1_ENC + M2_ENC)/2 to be feedback sensor on M2
+        clockwiseMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder,POSITION_MOTION_MAGIC_IDX, TIMEOUT);
+
+        counterMotor.configRemoteFeedbackFilter(clockwiseMotor.getDeviceID(), RemoteSensorSource.TalonSRX_SelectedSensor, REMOTE_0, TIMEOUT);
+        counterMotor.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, TIMEOUT);
+        counterMotor.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, TIMEOUT);
+        counterMotor.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, POSITION_MOTION_MAGIC_IDX, TIMEOUT);
     }
 
     /**
@@ -39,5 +57,24 @@ class SwerveMotor {
 
         clockwiseMotor.set(clockwiseCommand);
         counterMotor.set(counterCommand);
+    }
+
+    /**
+     * @return (sum of both encoders) % (the number of ticks per rev), so that the position wraps around
+     */
+    int getAngle() {
+        return MathUtils.resolveHalfAngleNative(counterMotor.getSelectedSensorPosition(POSITION_MOTION_MAGIC_IDX), STEERING_COUNTS_PER_REV);
+    }
+
+    /**
+     * @return Distance the module has translated
+     */
+    int getDistance() {
+        return counterMotor.getSelectedSensorPosition(POSITION_MOTION_MAGIC_IDX);
+    }
+
+    public void reset() {
+        clockwiseMotor.getSensorCollection().setQuadraturePosition(0, TIMEOUT);
+        counterMotor.getSensorCollection().setQuadraturePosition(0, TIMEOUT);
     }
 }
