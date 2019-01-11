@@ -97,6 +97,18 @@ public class MathUtils {
 		return error;
 	}
 
+	public static double getAngleError(double input, double setpoint) {
+		double error = setpoint - input;
+		if (Math.abs(error) > 180.0) {
+			if (error > 0) {
+				error -= 360.0;
+			} else {
+				error += 360.0;
+			}
+		}
+		return error;
+	}
+
 	/**
 	 * Converts a number from radians to degrees
 	 * @param x radians
