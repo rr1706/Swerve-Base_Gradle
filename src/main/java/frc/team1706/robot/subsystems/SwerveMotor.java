@@ -18,12 +18,13 @@ class SwerveMotor {
 
     /**
      *
-     * @param pwmPortC Port of the motor that moves the wheel Clockwise
-     * @param pwmPortCC Port of the motor that moves the wheel CounterClockwise
+     * @param canPortC Port of the motor that moves the wheel Clockwise
+     * @param canPortCC Port of the motor that moves the wheel CounterClockwise
      */
-    SwerveMotor(int pwmPortC, int pwmPortCC){
-        clockwiseMotor = new WPI_TalonSRX(pwmPortC);
-        counterMotor = new WPI_TalonSRX(pwmPortCC);
+    SwerveMotor(int canPortC, int canPortCC){
+        //FIXME switch to spark max when available
+        clockwiseMotor = new WPI_TalonSRX(canPortC);
+        counterMotor = new WPI_TalonSRX(canPortCC);
 
         //set (M1_ENC + M2_ENC)/2 to be feedback sensor on M2
         clockwiseMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder,POSITION_MOTION_MAGIC_IDX, TIMEOUT);

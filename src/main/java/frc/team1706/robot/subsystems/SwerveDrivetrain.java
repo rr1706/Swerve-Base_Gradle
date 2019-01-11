@@ -49,10 +49,10 @@ public class SwerveDrivetrain {
 	 */
 	public SwerveDrivetrain() {
 		swerveModules = new HashMap<>();
-		swerveModules.put(WheelType.FRONT_RIGHT, new SwerveModule(Integer.parseInt(FRPorts[0]), Integer.parseInt(FRPorts[1]), Integer.parseInt(FRPorts[2]), Integer.parseInt(FRPorts[3]), Integer.parseInt(FRPorts[4])));
-		swerveModules.put(WheelType.BACK_RIGHT, new SwerveModule(Integer.parseInt(BRPorts[0]), Integer.parseInt(BRPorts[1]), Integer.parseInt(BRPorts[2]), Integer.parseInt(BRPorts[3]), Integer.parseInt(BRPorts[4])));
-		swerveModules.put(WheelType.BACK_LEFT, new SwerveModule(Integer.parseInt(BLPorts[0]), Integer.parseInt(BLPorts[1]), Integer.parseInt(BLPorts[2]), Integer.parseInt(BLPorts[3]), Integer.parseInt(BLPorts[4])));
-		swerveModules.put(WheelType.FRONT_LEFT, new SwerveModule(Integer.parseInt(FLPorts[0]), Integer.parseInt(FLPorts[1]), Integer.parseInt(FLPorts[2]), Integer.parseInt(FLPorts[3]), Integer.parseInt(FLPorts[4])));
+		swerveModules.put(WheelType.FRONT_RIGHT, new SwerveModule(Integer.parseInt(FRPorts[0]), Integer.parseInt(FRPorts[1])));
+		swerveModules.put(WheelType.BACK_RIGHT, new SwerveModule(Integer.parseInt(BRPorts[0]), Integer.parseInt(BRPorts[1])));
+		swerveModules.put(WheelType.BACK_LEFT, new SwerveModule(Integer.parseInt(BLPorts[0]), Integer.parseInt(BLPorts[1])));
+		swerveModules.put(WheelType.FRONT_LEFT, new SwerveModule(Integer.parseInt(FLPorts[0]), Integer.parseInt(FLPorts[1])));
 
 	}
 
