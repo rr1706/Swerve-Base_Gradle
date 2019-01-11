@@ -325,8 +325,7 @@ public class Robot extends TimedRobot {
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 6 = moonSTR, 7 = moonRCW, 8 = moonAngle, 10 = time out(seconds), 11 = check for collision,
-				 * 12 = imu offset, 13 = arm position, 14 = hand position, 15  = check for havecube, 16 = check for nearcube
-				 * 17 = check for wall, 18 = check for onCube
+				 * 12 = imu offset
 				 */
 				// Note: use moonRCW to rotate robot while stationary
 
@@ -358,7 +357,7 @@ public class Robot extends TimedRobot {
 
 				autonomousAngle = commands[arrayIndex][3];
 
-				// Used to maintain angle, not turn
+				// only use when moving
 				if (autonomousAngle != -1) {
 					autonomousAngle(autonomousAngle);
 				}
@@ -403,6 +402,7 @@ public class Robot extends TimedRobot {
 
 				imuOffset = commands[arrayIndex][12];
 
+				// FIXME figure out why this isn't the latest version
 				if (commands[arrayIndex][6] != -2) {
 					STR = commands[arrayIndex][6];
 					RCW = commands[arrayIndex][7];
