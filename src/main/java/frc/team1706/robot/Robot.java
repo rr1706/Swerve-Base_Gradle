@@ -328,7 +328,7 @@ public class Robot extends TimedRobot {
 				 * 12 = imu offset, 13 = arm position, 14 = hand position, 15  = check for havecube, 16 = check for nearcube
 				 * 17 = check for wall, 18 = check for onCube
 				 */
-				//Note: use moonRCW to rotate robot
+				// Note: use moonRCW to rotate robot while stationary
 
 				currentDistance = SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance();
 
