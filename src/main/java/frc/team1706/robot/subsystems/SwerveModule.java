@@ -19,96 +19,96 @@ import frc.team1706.robot.utilities.Vector;
  * A swerve module.
  */
 public class SwerveModule {
-	private static final double TICKS_PER_REVOLUTION = 360.0;
+    private static final double TICKS_PER_REVOLUTION = 360.0;
 
-	private Vector position;
-	private double offset;
-	private double speedCommand;
-	private double angleCommand;
-	private double distance;
-	private double previousDistance = 0;
-	private double angleError;
-	private double rightSum = 0;
-	private double forwardSum = 0;
-	private SwerveMotor swerveMotor;
-	private PIDController anglePID;
-	private double angle;
-	private boolean wheelReversed;
+    private Vector position;
+    private double offset;
+    private double speedCommand;
+    private double angleCommand;
+    private double distance;
+    private double previousDistance = 0;
+    private double angleError;
+    private double rightSum = 0;
+    private double forwardSum = 0;
+    private SwerveMotor swerveMotor;
+    private PIDController anglePID;
+    private double angle;
+    private boolean wheelReversed;
 
-	private int id;
+    private int id;
 
-	/**
-	 * @param pwmPortC Port of the motor that moves the wheel Clockwise
-	 * @param pwmPortCC Port of the motor that moves the wheel CounterClockwise
-	 */
-	SwerveModule(int pwmPortC, int pwmPortCC) {
-		super();
+    /**
+     * @param canPortC Port of the motor that moves the wheel Clockwise
+     * @param canPortCC Port of the motor that moves the wheel CounterClockwise
+     */
+    SwerveModule(int canPortC, int canPortCC) {
+        super();
 
-		swerveMotor = new SwerveMotor(pwmPortC, pwmPortCC);
+        swerveMotor = new SwerveMotor(canPortC, canPortCC);
 
-		anglePID = new PIDController(1.0, 0.0, 0.0);
-		anglePID.setContinuous();
-		anglePID.setInputRange(0.0, 360.0);
-		anglePID.setOutputRange(-1.0, 1.0);
+        anglePID = new PIDController(1.0, 0.0, 0.0);
+        anglePID.setContinuous();
+        anglePID.setInputRange(0.0, 360.0);
+        anglePID.setOutputRange(-1.0, 1.0);
 
-	}
+    }
 
-	void drive() {
-		double delta;
-		double rightDelta;
-		double forwardDelta;
+    void drive() {
+        double delta;
+        double rightDelta;
+        double forwardDelta;
 
-		distance = swerveMotor.getDistance();
+        distance = swerveMotor.getDistance();
 
-		angle = swerveMotor.getAngle();
+        angle = swerveMotor.getAngle();
 
-		anglePID.setInput(angle);
-		anglePID.setSetpoint(angleCommand);
+        anglePID.setInput(angle);
+        anglePID.setSetpoint(angleCommand);
 
-		angleError = anglePID.getError();
+        angleError = anglePID.getError();
 
-		if (wheelReversed) {
-			delta = previousDistance - distance;
-		} else {
-			delta = distance - previousDistance;
-		}
+        if (wheelReversed) {
+            delta = previousDistance - distance;
+        } else {
+            delta = distance - previousDistance;
+        }
 
-		if (speedCommand == 0) {
-			angleError = 0;
-		}
+        if (speedCommand == 0) {
+            angleError = 0;
+        }
 
-		/*
-		 * If the wheel has to move over 45 degrees
-		 * go opposite to command and reverse translation
-		 */
-		if (Math.abs(angleError) > TICKS_PER_REVOLUTION/8.0) {
-			this.angleCommand = MathUtils.reverseWheelDirection(this.angleCommand);
-			this.speedCommand *= -1;
-			angleError = MathUtils.reverseErrorDirection(angleError);
+        /*
+         * If the wheel has to move over 45 degrees
+         * go opposite to command and reverse translation
+         */
+        if (Math.abs(angleError) > TICKS_PER_REVOLUTION/8.0) {
+            this.angleCommand = MathUtils.reverseWheelDirection(this.angleCommand);
+            this.speedCommand *= -1;
+            angleError = MathUtils.reverseErrorDirection(angleError);
 
-			wheelReversed = true;
-		} else {
-			wheelReversed = false;
-		}
+            wheelReversed = true;
+        } else {
+            wheelReversed = false;
+        }
 
-		/*
-		 * If wheel direction has to change more than 22.5 degrees
-		 * then set wheel speed command to 0 while wheel is turning.
-		 */
-		if (Math.abs(angleError) > TICKS_PER_REVOLUTION/16) {
-			speedCommand = 0.0;
-		}
+        /*
+         * If wheel direction has to change more than 22.5 degrees
+         * then set wheel speed command to 0 while wheel is turning.
+         */
+        if (Math.abs(angleError) > TICKS_PER_REVOLUTION/16) {
+            speedCommand = 0.0;
+        }
 
-		/*
-		 * If wheel is not translating, don't rotate
-		 */
-		if (Math.abs(this.speedCommand) >= 0.1) {
-			anglePID.setSetpoint(angle);
-		}
+        /*
+         * If wheel is not translating, don't rotate
+         */
+        if (Math.abs(this.speedCommand) >= 0.1) {
+            anglePID.setSetpoint(angle);
+        }
 
-		swerveMotor.set(speedCommand, anglePID.performPID());
+        swerveMotor.set(speedCommand, anglePID.performPID());
 
-		// Debug
+        // Debug
 //		if (id == 1) {
 //			SmartDashboard.putNumber("Error", angleError);
 //			SmartDashboard.putNumber("Motor Angle", angle);
@@ -116,90 +116,90 @@ public class SwerveModule {
 //
 //		}
 
-		rightDelta = delta * Math.sin(MathUtils.degToRad(angleCommand));
-		forwardDelta = delta * Math.cos(MathUtils.degToRad(angleCommand));
+        rightDelta = delta * Math.sin(MathUtils.degToRad(angleCommand));
+        forwardDelta = delta * Math.cos(MathUtils.degToRad(angleCommand));
 
-		rightSum += rightDelta;
-		forwardSum += forwardDelta;
+        rightSum += rightDelta;
+        forwardSum += forwardDelta;
 
-		previousDistance = distance;
+        previousDistance = distance;
 
-	}
+    }
 
-	public void setID(int id) {
-		this.id = id;
-	}
+    public void setID(int id) {
+        this.id = id;
+    }
 
-	public double getAngle() {
-		return this.angle;
-	}
+    public double getAngle() {
+        return this.angle;
+    }
 
-	void setSpeedCommand(double speedCommand) {
-		this.speedCommand = speedCommand;
-	}
+    void setSpeedCommand(double speedCommand) {
+        this.speedCommand = speedCommand;
+    }
 
-	void setAngleCommand(double angleCommand) {
-		this.angleCommand = angleCommand;
-	}
+    void setAngleCommand(double angleCommand) {
+        this.angleCommand = angleCommand;
+    }
 
-	double getSpeedCommand() {
-		return this.speedCommand;
-	}
+    double getSpeedCommand() {
+        return this.speedCommand;
+    }
 
-	double getAngleCommand() {
-		return this.angleCommand;
-	}
+    double getAngleCommand() {
+        return this.angleCommand;
+    }
 
-	double getOffset() {
-		return offset;
-	}
+    double getOffset() {
+        return offset;
+    }
 
-	public void setOffset(double offset) {
-		this.offset = MathUtils.degToRad(offset);
-	}
+    public void setOffset(double offset) {
+        this.offset = MathUtils.degToRad(offset);
+    }
 
-	Vector getPosition() {
-		return position;
-	}
+    Vector getPosition() {
+        return position;
+    }
 
-	public void setPosition(Vector position) {
-		this.position = position;
-	}
+    public void setPosition(Vector position) {
+        this.position = position;
+    }
 
-	public double getAngleError() {
-		return this.angleError;
-	}
+    public double getAngleError() {
+        return this.angleError;
+    }
 
-	public double getDistance() {
-		return distance;
-	}
+    public double getDistance() {
+        return distance;
+    }
 
-	public void resetDistance() {
-		swerveMotor.reset();
-	}
+    public void resetDistance() {
+        swerveMotor.reset();
+    }
 
-	public boolean getReversed() {
-		return this.wheelReversed;
-	}
+    public boolean getReversed() {
+        return this.wheelReversed;
+    }
 
-	public double getRightSum() {
-		if (wheelReversed) {
-			return -rightSum;
-		} else {
-			return rightSum;
-		}
-	}
+    public double getRightSum() {
+        if (wheelReversed) {
+            return -rightSum;
+        } else {
+            return rightSum;
+        }
+    }
 
-	public double getForwardSum() {
-		if (wheelReversed) {
-			return -forwardSum;
-		} else {
-			return forwardSum;
-		}
-	}
+    public double getForwardSum() {
+        if (wheelReversed) {
+            return -forwardSum;
+        } else {
+            return forwardSum;
+        }
+    }
 
-	public void resetDelta() {
-		rightSum = 0.0;
-		forwardSum = 0.0;
-	}
+    public void resetDelta() {
+        rightSum = 0.0;
+        forwardSum = 0.0;
+    }
 }
