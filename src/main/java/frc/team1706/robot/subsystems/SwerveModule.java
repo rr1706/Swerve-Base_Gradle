@@ -22,17 +22,19 @@ public class SwerveModule {
     private static final double TICKS_PER_REVOLUTION = 360.0;
 
     private Vector position;
-    private double offset;
     private double speedCommand;
     private double angleCommand;
     private double distance;
     private double previousDistance = 0;
+    private double previousRobotDistance = 0.0;
     private double angleError;
     private double rightSum = 0;
     private double forwardSum = 0;
     private SwerveMotor swerveMotor;
     private PIDController anglePID;
     private double angle;
+    private double rightDelta;
+    private double forwardDelta;
     private boolean wheelReversed;
 
     private int id;
@@ -116,13 +118,11 @@ public class SwerveModule {
 //
 //		}
 
-        rightDelta = delta * Math.sin(MathUtils.degToRad(angleCommand));
-        forwardDelta = delta * Math.cos(MathUtils.degToRad(angleCommand));
-
-        rightSum += rightDelta;
-        forwardSum += forwardDelta;
+        rightDelta = delta * Math.sin(MathUtils.resolveAngle(Math.toRadians(angle)));
+        forwardDelta = delta * Math.cos(MathUtils.resolveAngle(Math.toRadians(angle)));
 
         previousDistance = distance;
+        previousRobotDistance = SwerveDrivetrain.getRobotDistance();
 
     }
 
@@ -148,14 +148,6 @@ public class SwerveModule {
 
     double getAngleCommand() {
         return this.angleCommand;
-    }
-
-    double getOffset() {
-        return offset;
-    }
-
-    public void setOffset(double offset) {
-        this.offset = MathUtils.degToRad(offset);
     }
 
     Vector getPosition() {
@@ -198,8 +190,17 @@ public class SwerveModule {
         }
     }
 
-    public void resetDelta() {
-        rightSum = 0.0;
-        forwardSum = 0.0;
-    }
+	public void resetDelta() {
+		rightSum = 0.0;
+		forwardSum = 0.0;
+	}
+
+	public double[] getXYDist() {
+		if (wheelReversed) {
+			forwardSum *= -1.0;
+			rightSum *= -1.0;
+		}
+		double[] i = {rightDelta, forwardDelta};
+		return i;
+	}
 }

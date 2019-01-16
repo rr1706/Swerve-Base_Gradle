@@ -1,20 +1,15 @@
 package frc.team1706.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
-import com.ctre.phoenix.motorcontrol.SensorTerm;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
 import frc.team1706.robot.utilities.MathUtils;
 
 class SwerveMotor {
-    private static final int POSITION_MOTION_MAGIC_IDX = 0;
-    private static final int REMOTE_0 = 0;
-    private static final int TIMEOUT = 10;
-    public static final int STEERING_COUNTS_PER_REV = 800;
+    public static final double STEERING_COUNTS_PER_REV = 10.0;
 
-    private WPI_TalonSRX clockwiseMotor;
-    private WPI_TalonSRX counterMotor;
+    private CANSparkMax clockwiseMotor;
+    private CANSparkMax counterMotor;
+
+    private CANEncoder clockwiseEncoder;
+    private CANEncoder counterEncoder;
 
     /**
      *
@@ -23,16 +18,13 @@ class SwerveMotor {
      */
     SwerveMotor(int canPortC, int canPortCC){
         //FIXME switch to spark max when available
-        clockwiseMotor = new WPI_TalonSRX(canPortC);
-        counterMotor = new WPI_TalonSRX(canPortCC);
+        clockwiseMotor = new CANSparkMax(canPortC);
+        counterMotor = new CANSparkMax(canPortCC);
+        clockwiseEncoder = new CANEncoder(clockwiseMotor);
+        counterEncoder = new CANEncoder(counterMotor);
 
-        //set (M1_ENC + M2_ENC)/2 to be feedback sensor on M2
-        clockwiseMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder,POSITION_MOTION_MAGIC_IDX, TIMEOUT);
-
-        counterMotor.configRemoteFeedbackFilter(clockwiseMotor.getDeviceID(), RemoteSensorSource.TalonSRX_SelectedSensor, REMOTE_0, TIMEOUT);
-        counterMotor.configSensorTerm(SensorTerm.Sum0, FeedbackDevice.RemoteSensor0, TIMEOUT);
-        counterMotor.configSensorTerm(SensorTerm.Sum1, FeedbackDevice.QuadEncoder, TIMEOUT);
-        counterMotor.configSelectedFeedbackSensor(FeedbackDevice.SensorSum, POSITION_MOTION_MAGIC_IDX, TIMEOUT);
+        clockwiseMotor.setInverted(false);
+        counterMotor.setInverted(true);
     }
 
     /**
@@ -61,21 +53,21 @@ class SwerveMotor {
     }
 
     /**
-     * @return (sum of both encoders) % (the number of ticks per rev), so that the position wraps around
+     * @return sum of both encoders, wrapped from 0 to 360
      */
-    int getAngle() {
-        return MathUtils.resolveHalfAngleNative(counterMotor.getSelectedSensorPosition(POSITION_MOTION_MAGIC_IDX), STEERING_COUNTS_PER_REV);
+    double getAngle() {
+        return MathUtils.resolveAngleNative(getDistance(), STEERING_COUNTS_PER_REV)*36.0;
     }
 
     /**
      * @return Distance the module has translated
      */
     int getDistance() {
-        return counterMotor.getSelectedSensorPosition(POSITION_MOTION_MAGIC_IDX);
+        return clockwiseEncoder.getDistance() - counterEncoder.getDistance();
     }
 
     public void reset() {
-        clockwiseMotor.getSensorCollection().setQuadraturePosition(0, TIMEOUT);
-        counterMotor.getSensorCollection().setQuadraturePosition(0, TIMEOUT);
+//        clockwiseEncoder.;
+//        counterEncoder.;
     }
 }

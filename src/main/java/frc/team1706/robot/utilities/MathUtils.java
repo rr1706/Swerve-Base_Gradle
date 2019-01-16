@@ -191,17 +191,17 @@ public class MathUtils {
 	}
 
 	/**
-	 * Adjusts {@code ticks} so that it is between {@code -ticksPerRev/2} and {@code ticksPerRev/2}.
+	 * Adjusts {@code ticks} so that it is between 0 and {@code ticksPerRev}.
 	 *
 	 * @param ticks - the count to adjust in native ticks
 	 * @param ticksPerRev - number of native ticks per revolution
 	 * @return the adjusted value
 	 */
-	public static int resolveHalfAngleNative(int ticks, int ticksPerRev) {
-		while (ticks >= ticksPerRev / 2) {
+	public static double resolveAngleNative(double ticks, double ticksPerRev) {
+		while (ticks >= ticksPerRev) {
 			ticks -= ticksPerRev;
 		}
-		while (ticks < -ticksPerRev / 2) {
+		while (ticks < 0.0) {
 			ticks += ticksPerRev;
 		}
 		return ticks;

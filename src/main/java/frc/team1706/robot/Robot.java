@@ -8,14 +8,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.team1706.robot.subsystems.*;
-import frc.team1706.robot.subsystems.PowerPanel;
 import frc.team1706.robot.subsystems.SwerveDrivetrain.WheelType;
-import frc.team1706.robot.utilities.MathUtils;
-import frc.team1706.robot.utilities.PIDController;
-import frc.team1706.robot.utilities.Vector;
+import frc.team1706.robot.utilities.*;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,6 +24,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * resource directory.
  */
 public class Robot extends TimedRobot {
+
+	private SendableChooser<Integer> autoChooser;
+
 	private Compressor compressor;
 
 	public static XboxController xbox1 = new XboxController(0);
@@ -35,15 +36,18 @@ public class Robot extends TimedRobot {
 //	private Thread t;
 	private SwerveDrivetrain driveTrain;
 	private IMU imu;
-	private RRLogger log;
 
 	private boolean robotBackwards;
+
+	private double robotOffset;
 
 	private int disabled = 0;
 
 	private double[][] commands;
 	private int arrayIndex = -1;
 	private int autoMove = 0;
+	private int translateType;
+	private double autonomousAngle;
 	private double tSpeed;
 	private double rSpeed;
 	private double previousDistance = 0.0;
@@ -52,8 +56,8 @@ public class Robot extends TimedRobot {
 	private boolean driveDone;
 	private boolean turnDone;
 	private boolean timeDone;
-	private boolean collisionDone;
-	private boolean moonDone;
+	private double offsetDeg;
+	private double prevOffset = 0;
 	private double timeBase;
 	private boolean timeCheck;
 	private double smoothArc;
@@ -64,7 +68,7 @@ public class Robot extends TimedRobot {
 
 	private int dx = -1;
 
-	private double FWD;
+	public static double FWD;
 	private double STR;
 	private double RCW;
 
@@ -82,7 +86,8 @@ public class Robot extends TimedRobot {
 	private boolean currentOrientedButton = false;
 
 	private PIDController SwerveCompensate;
-	private PIDController AutoTranslate;
+
+	private double lead;
 
 	private double robotRotation;
 
@@ -90,8 +95,6 @@ public class Robot extends TimedRobot {
 
 	private Properties application = new Properties();
 	private File offsets = new File("/home/lvuser/SWERVE_OFFSET.txt");
-
-	private int armController = 0;
 
 	private boolean rumble = false;
 	private int rumbleTime = 0;
@@ -101,13 +104,12 @@ public class Robot extends TimedRobot {
 
 		SwerveCompensate.enable();
 
-		if (xbox1.DPad() != -1) {
-			keepAngle = xbox1.DPad();
-		}
-
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
+		lead = RCW * leadNum;
 
 		SmartDashboard.putNumber("DPAD", xbox1.DPad());
+
+//		System.out.println(Math.abs(xbox1.LStickX()));
 
 		// This will update the angle to keep the robot's orientation
 		if (Math.abs(xbox1.RStickX()) > 0.05 || // If right stick is pressed
@@ -145,17 +147,6 @@ public class Robot extends TimedRobot {
 	 */
 	private void loadOffsets() {
 		// LABEL load offsets
-
-		// Set the offset of each wheapel from a file on the roborio
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(Double.parseDouble(application.getProperty("front_right_offset", "0")));
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setOffset(Double.parseDouble(application.getProperty("front_left_offset", "0")));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setOffset(Double.parseDouble(application.getProperty("back_left_offset", "0")));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setOffset(Double.parseDouble(application.getProperty("back_right_offset", "0")));
-
-		SmartDashboard.putNumber("FR offset: ", Double.parseDouble(application.getProperty("front_right_offset", "0")));
-		SmartDashboard.putNumber("FL offset: ", Double.parseDouble(application.getProperty("front_left_offset", "0")));
-		SmartDashboard.putNumber("BL offset: ", Double.parseDouble(application.getProperty("back_left_offset", "0")));
-		SmartDashboard.putNumber("BR offset: ", Double.parseDouble(application.getProperty("back_right_offset", "0")));
 
 		// Set the position of each wheel from a file on the roborio
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setPosition(Vector.load(application.getProperty("front_right_pos", "0.0,0.0")));
@@ -207,9 +198,9 @@ public class Robot extends TimedRobot {
 //			throw new RuntimeException(e);
 //		}
 
-		SendableChooser<Integer> autoChooser;
-
 		compressor = new Compressor(0);
+
+		xbox1.setDeadband(0.01);
 
 		Time.start();
 
@@ -230,10 +221,10 @@ public class Robot extends TimedRobot {
 		autoChooser.addObject("Forward", 4);
 		SmartDashboard.putData("Autonomous Mode Chooser", autoChooser);
 
-		log = new RRLogger();
-
 		imu = new IMU();
 		imu.IMUInit();
+
+		keepAngle = imu.getAngle();
 
 		SwerveCompensate = new PIDController(0.015, 0.00, 0.00);
 		SwerveCompensate.setContinuous(true);
@@ -241,13 +232,7 @@ public class Robot extends TimedRobot {
 		SwerveCompensate.setInputRange(0.0, 360.0);
 		SwerveCompensate.setTolerance(1.0);
 
-		AutoTranslate = new PIDController(01.000, 0.0, 0.0);
-		AutoTranslate.setContinuous(false);
-		AutoTranslate.setOutputRange(-1.0, 1.0);
-		AutoTranslate.setInputRange(0.0, 250.0);
-
 		SwerveCompensate.enable();
-		AutoTranslate.enable();
 	}
 
 	public void autonomousInit() {
@@ -260,6 +245,7 @@ public class Robot extends TimedRobot {
 		String choice;
 
 		choice = "/home/lvuser/Forward.csv";
+
 
 		SmartDashboard.putString("Autonomous File", choice);
 
@@ -323,16 +309,12 @@ public class Robot extends TimedRobot {
 			case 1:
 
 //				SmartDashboard.putNumber("Array Index", arrayIndex);
-//				SmartDashboard.putNumber("Auto Distance Gone", Math.abs(currentDistance - previousDistance));
-//				SmartDashboard.putNumber("Auto Distance Command", commands[arrayIndex][4]);
-//				SmartDashboard.putNumber("FWD", FWD);
-//				SmartDashboard.putNumber("STR", STR);
-//				SmartDashboard.putNumber("RCW", RCW);
+//				SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 				/*
 				 * 0 = translate speed, 1 = rotate speed, 2 = direction to translate, 3 = direction to face,
 				 * 4 = distance(in), 5 = How to accelerate(0 = no modification, 1 = transition, 2 = accelerate, 3 = decelerate)
-				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle,
+				 * 6 = smoothArcStartAngle, 7 = smoothArcEndAngle
 				 * 8 = time out(seconds), 9 = imu offset
 				 *
 				 */
@@ -349,7 +331,7 @@ public class Robot extends TimedRobot {
 				}
 
 				if (commands[arrayIndex][6] <= 360.0 && commands[arrayIndex][6] >= 0.0) {
-					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][6], commands[arrayIndex][7], Math.abs(currentDistance - previousDistance)));
+					smoothArc = Math.toRadians(MathUtils.convertRange(0.0, commands[arrayIndex][4], commands[arrayIndex][6], commands[arrayIndex][7], Math.abs(SmartDashboard.getNumber("Distance", 0) - previousDistance)));
 					FWD = Math.cos(smoothArc);
 					STR = Math.sin(smoothArc);
 				}
@@ -381,7 +363,7 @@ public class Robot extends TimedRobot {
 					STR *= smoothAccelerate;
 				} else if (commands[arrayIndex][5] == 3) {
 					smoothAccelerateNum = (MathUtils.convertRange(previousDistance, previousDistance + commands[arrayIndex][4], commands[arrayIndex][0], minSpeed, SmartDashboard.getNumber("Distance", 0)));
-					smoothAccelerate = smoothAccelerateNum;
+					 smoothAccelerate = smoothAccelerateNum;
 					FWD *= smoothAccelerate;
 					STR *= smoothAccelerate;
 				} else {
@@ -418,7 +400,9 @@ public class Robot extends TimedRobot {
 					keepAngle();
 				}
 
-//				System.out.println(FWD);
+				SmartDashboard.putNumber("FWD", FWD);
+				SmartDashboard.putNumber("STR", STR);
+				SmartDashboard.putNumber("RCW", RCW);
 
 				if (robotBackwards) {
 					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
@@ -426,12 +410,16 @@ public class Robot extends TimedRobot {
 					driveTrain.drive(new Vector(STR, FWD), RCW);
 				}
 
-//				System.out.println("d: " + driveDone + " | t: " + turnDone);
-
 				if (override) {
 					driveDone = true;
 					turnDone = true;
 				}
+
+//				System.out.println("Drive: " + driveDone);
+//				System.out.println("Turn: " + turnDone);
+//				System.out.println("Coll: " + collisionDone);
+//				System.out.println("Time: " + timeDone);
+//				System.out.println("TimeNum: " + Time.get() + " | " + (timeBase + commands[arrayIndex][10]));
 
 				if (driveDone) {
 					arrayIndex++;
@@ -442,6 +430,7 @@ public class Robot extends TimedRobot {
 					timeDone = false;
 					override = false;
 					timeBase = Time.get();
+
 				}
 				break;
 		}
@@ -449,8 +438,6 @@ public class Robot extends TimedRobot {
 
 	public void teleopInit() {
 //		jet.startTeleop();
-
-		log.start();
 
 		imu.setOffset(imuOffset);
 
@@ -465,12 +452,13 @@ public class Robot extends TimedRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
+
 		// LABEL teleop periodic
 		autonomous = false;
 
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 		SmartDashboard.putNumber("Wrist Amps", PowerPanel.zero());
-		SmartDashboard.putNumber("Elbow Amps", PowerPanel.one());
+		SmartDashboard.putNumber("Shoulder Amps", PowerPanel.one());
 
 		SmartDashboard.putNumber("Winch1 Amps", PowerPanel.zero());
 		SmartDashboard.putNumber("Winch2 Amps", PowerPanel.one());
@@ -479,18 +467,10 @@ public class Robot extends TimedRobot {
 		xbox1.setDeadband(0.09);
 		xbox2.setDeadband(0.09);
 
-		// calibration from smartdashboard
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setOffset(SmartDashboard.getNumber("FR offset: ", 0));
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setOffset(SmartDashboard.getNumber("FL offset: ", 0));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setOffset(SmartDashboard.getNumber("BL offset: ", 0));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setOffset(SmartDashboard.getNumber("BR offset: ", 0));
-
-		log.newPowerLine();
-
-		log.addPower("Wrist", PowerPanel.two());
-//		log.addPower("Wrist", PowerPanel.two());
-
-		SmartDashboard.putNumber("Distance", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance());
+		SmartDashboard.putNumber("DistanceFR", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
+		SmartDashboard.putNumber("DistanceFL", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance());
+		SmartDashboard.putNumber("DistanceBL", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance());
+		SmartDashboard.putNumber("DistanceBR", SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getDistance());
 
 		if (xbox1.Back()) {
 			imu.reset(0); // robot should be perpendicular to field when pressed.
@@ -508,10 +488,6 @@ public class Robot extends TimedRobot {
 		// strafe command (-1.0 to 1.0)
 		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage();
 
-		// rotate clockwise command (-1.0 to 1.0)
-		// Limited to half speed because of wheel direction calculation issues when rotating quickly
-		// Let robot rotate at full speed if it is not translating
-
 		// Increase the time it takes for the robot to accelerate
 		currentRampTime = Time.get();
 		if (FWD != 0.0 || STR != 0.0 || RCW != 0.0) {
@@ -526,7 +502,6 @@ public class Robot extends TimedRobot {
 
 			FWD *= wheelRamp;
 			STR *= wheelRamp;
-			RCW *= wheelRamp;
 		} else {
 			prevRampTime = currentRampTime;
 		}
@@ -537,9 +512,6 @@ public class Robot extends TimedRobot {
 		} else {
 			xbox1.stopRumble();
 		}
-
-//		xbox1.rumbleRight(xbox2.LTrig());
-//		xbox1.rumbleLeft(1-xbox2.LTrig());
 
 		if (rumble) {
 			xbox2.rumbleRight(0.5);
@@ -558,7 +530,7 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 		double headingDeg = imu.getAngle();
-		double headingRad = MathUtils.degToRad(headingDeg);
+		double headingRad = Math.toRadians(headingDeg);
 
 		currentOrientedButton = xbox1.A();
 		if (currentOrientedButton && !previousOrientedButton) {
@@ -597,6 +569,9 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("STR", STR);
 		SmartDashboard.putNumber("RCW", RCW);
 
+		// rotate clockwise command (-1.0 to 1.0)
+		// Limited to half speed because of wheel direction calculation issues when rotating quickly
+		// Let robot rotate at full speed if it is not translating
 		if (FWD + STR == 0.0) {
 			RCW = xbox1.RStickX();
 		} else {
@@ -612,6 +587,12 @@ public class Robot extends TimedRobot {
 		}
 	}
 
+	public void robotPeriodic() {
+		currentDistance += SwerveDrivetrain.getRobotDistance();
+//		System.out.println("Robot Dist: " + SwerveDrivetrain.getRobotDistance());
+		SmartDashboard.putNumber("Distance", currentDistance);
+	}
+
 	public void disabledInit() {
 //		jet.setDisabled();
 		autoMove = 0;
@@ -620,9 +601,6 @@ public class Robot extends TimedRobot {
 		if (disabled < 1) {
 			System.out.println("Hello, I am Otto");
 			disabled++;
-		} else {
-			System.out.println("Saving log file(s)");
-			log.writeFromQueue();
 
 		}
 
@@ -644,104 +622,101 @@ public class Robot extends TimedRobot {
 		System.out.println("BR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle()));
 		System.out.println("FR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle()));
 
-		// TODO remake for new modules
-		/*
 		// Move a single motor from the drivetrain depending on Dpad and right stick
-		if (dx == 0) {
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 45) {
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 90) {
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 135) {
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 180) {
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 225) {
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 270) {
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
-		}
-
-		if (dx == 315) {
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(speed);
-
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
-			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
-		}
-		*/
+//		if (dx == 0) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 45) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 90) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 135) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 180) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 225) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 270) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(0);
+//		}
+//
+//		if (dx == 315) {
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectRotateCommand(speed);
+//
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectTranslateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDirectRotateCommand(0);
+//			SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDirectTranslateCommand(0);
+//		}
 	}
 }
