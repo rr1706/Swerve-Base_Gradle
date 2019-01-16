@@ -1,9 +1,12 @@
 package frc.team1706.robot.subsystems;
 
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel;
 import frc.team1706.robot.utilities.MathUtils;
 
 class SwerveMotor {
-    public static final double STEERING_COUNTS_PER_REV = 10.0;
+    private static final double STEERING_COUNTS_PER_REV = 10.0;
 
     private CANSparkMax clockwiseMotor;
     private CANSparkMax counterMotor;
@@ -17,9 +20,8 @@ class SwerveMotor {
      * @param canPortCC Port of the motor that moves the wheel CounterClockwise
      */
     SwerveMotor(int canPortC, int canPortCC){
-        //FIXME switch to spark max when available
-        clockwiseMotor = new CANSparkMax(canPortC);
-        counterMotor = new CANSparkMax(canPortCC);
+        clockwiseMotor = new CANSparkMax(canPortC, CANSparkMaxLowLevel.MotorType.kBrushless);
+        counterMotor = new CANSparkMax(canPortCC, CANSparkMaxLowLevel.MotorType.kBrushless);
         clockwiseEncoder = new CANEncoder(clockwiseMotor);
         counterEncoder = new CANEncoder(counterMotor);
 
@@ -62,8 +64,8 @@ class SwerveMotor {
     /**
      * @return Distance the module has translated
      */
-    int getDistance() {
-        return clockwiseEncoder.getDistance() - counterEncoder.getDistance();
+    double getDistance() {
+        return clockwiseEncoder.getPosition() - counterEncoder.getPosition();
     }
 
     public void reset() {
