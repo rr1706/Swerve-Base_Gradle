@@ -10,3 +10,6 @@
 *.dll
 *.gradle
 .wpilib/wpilib_preferences.json
+*.debug
+*.so
+*.MF
