@@ -106,13 +106,12 @@ public class SwerveModule {
 //        spin%=360;
 
 
-        if (id == 1) {
-            SmartDashboard.putNumber("Angle", Math.abs(angle));
-            SmartDashboard.putNumber("Angle Command", Math.abs(angleCommand));
-            SmartDashboard.putNumber("Angle Error", Math.abs(anglePID.getError()));
+        SmartDashboard.putNumber("Angle", Math.abs(angle));
+        SmartDashboard.putNumber("Angle Command", Math.abs(angleCommand));
+        SmartDashboard.putNumber("Angle Error", Math.abs(anglePID.getError()));
 
-            swerveMotor.set(speedCommand, anglePID.performPID());
-        }
+        swerveMotor.set(speedCommand, anglePID.performPID());
+
 
         SmartDashboard.putNumber("Angle PID", anglePID.performPID());
 
