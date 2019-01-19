@@ -13,3 +13,7 @@
 *.debug
 *.so
 *.MF
+*.4
+build/debug/debuginfo.json
+.vscode/settings.json
+.vscode/launch.json
