@@ -1,25 +1,2 @@
-### Gradle ###
-.gradle
-**/build/
 
-# Ignore Gradle GUI config
-gradle-app.setting
-
-# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-!gradle-wrapper.jar
-
-# Cache of project
-.gradletasknamecache
-
-# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
-# gradle/wrapper/gradle-wrapper.properties
-.idea/workspace.xml
-*.xml
-*.lock
-*.bin
-*.jar
-*.properties
-*.xml___jb_tmp___
-.idea/*
-*.class
-*.iml
+\.idea/workspace\.xml

@@ -1,0 +1,11 @@
+front_right_pos=11.486,12.582
+front_left_pos=-11.486,12.582
+back_left_pos=-11.486,-12.918
+back_right_pos=11.236,-12.582
+
+front_right_ports=0,1
+front_left_ports=2,3
+back_left_ports=4,5
+back_right_ports=6,7
+
+robot_backwards=false
