@@ -4,3 +4,9 @@
 *.lock
 *.class
 *.jar
+*.properties
+*.xml
+*.iml
+*.dll
+*.gradle
+.wpilib/wpilib_preferences.json

@@ -1,9 +1,0 @@
-[
-  {
-    "artifact": "frcJava",
-    "target": "roborio",
-    "debugfile": "frcJava_roborio.debugconfig",
-    "project": "Swerve-Base_Gradle",
-    "language": "java"
-  }
-]
