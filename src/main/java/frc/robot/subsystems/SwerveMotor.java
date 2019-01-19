@@ -18,7 +18,7 @@ class SwerveMotor {
     private CANPIDController counterPID;
 
     private double motorP = 4e-4;
-    private double motorI = 0.0/*1e-6*/;
+    private double motorI = 0.0;
     private double motorD = 2e-5;
     private double motorF = 0.0;
     private double kMaxOutput = 1;
@@ -106,7 +106,7 @@ class SwerveMotor {
 //            System.out.println("C: " + speedCommand + " | CC: " + rotationCommand);
 //        }
 
-        if (clockwiseCommand > SMALL_NUMBER) {
+        if (Math.abs(clockwiseCommand) > SMALL_NUMBER) {
             clockwiseCommand*=maxRPM;
             clockwisePID.setReference(clockwiseCommand, ControlType.kVelocity);
 
@@ -114,7 +114,7 @@ class SwerveMotor {
             clockwiseMotor.stopMotor();
         }
 
-        if (counterCommand > SMALL_NUMBER) {
+        if (Math.abs(counterCommand) > SMALL_NUMBER) {
             counterCommand*=maxRPM;
             counterPID.setReference(-counterCommand, ControlType.kVelocity);
 

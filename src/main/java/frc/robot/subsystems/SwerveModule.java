@@ -80,7 +80,7 @@ public class SwerveModule {
 //            wheelReversed = false;
 //        }
 
-        anglePID.setPID(SmartDashboard.getNumber("kP", 0.0), SmartDashboard.getNumber("kI", 0.0), SmartDashboard.getNumber("kD", 0.0));
+//        anglePID.setPID(SmartDashboard.getNumber("kP", 0.0), SmartDashboard.getNumber("kI", 0.0), SmartDashboard.getNumber("kD", 0.0));
         anglePID.setInput(angle);
         anglePID.setSetpoint(angleCommand);
 

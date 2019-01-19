@@ -81,8 +81,8 @@ public class MathUtils {
 
 	/**
 	 * Calculates the error between a sensor and desired direction
-	 * @param direction Direction in radians
-	 * @param sensor Sensor in radians
+	 * @param direction Direction in degrees
+	 * @param sensor Sensor in degrees
 	 * @return Error
 	 */
 	public static double calculateError(double direction, double sensor) {
