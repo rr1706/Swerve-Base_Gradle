@@ -106,8 +106,6 @@ public class Robot extends TimedRobot {
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
 		lead = RCW * leadNum;
 
-		SmartDashboard.putNumber("DPAD", xbox1.DPad());
-
 //		System.out.println(Math.abs(xbox1.LStickX()));
 
 		// This will update the angle to keep the robot's orientation
@@ -153,6 +151,11 @@ public class Robot extends TimedRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setPosition(Vector.load(application.getProperty("back_left_pos", "0.0,0.0")));
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setPosition(Vector.load(application.getProperty("back_right_pos", "0.0,0.0")));
 
+		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDrift(application.getProperty("front_right_drift", "0.0,0.0").split(","));
+		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDrift(application.getProperty("front_left_drift", "0.0,0.0").split(","));
+		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDrift(application.getProperty("back_left_drift", "0.0,0.0").split(","));
+		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDrift(application.getProperty("back_right_drift", "0.0,0.0").split(","));
+
 		robotBackwards = Boolean.parseBoolean(application.getProperty("robot_backwards", "false"));
 	}
 
@@ -180,6 +183,7 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		// LABEL robot init
 		// Load the wheel offset file from the roborio
+
 		try {
 			FileInputStream in = new FileInputStream(offsets);
 			application.load(in);
@@ -207,9 +211,9 @@ public class Robot extends TimedRobot {
 		driveTrain = new SwerveDrivetrain();
 		loadOffsets();
 
-		SmartDashboard.putNumber("CompensateP", 0.02);
-		SmartDashboard.putNumber("CompensateI", 0.0);
-		SmartDashboard.putNumber("CompensateD", 0.0);
+//		SmartDashboard.putNumber("CompensateP", 0.02);
+//		SmartDashboard.putNumber("CompensateI", 0.0);
+//		SmartDashboard.putNumber("CompensateD", 0.0);
 
 		SmartDashboard.putNumber("Autonomous Delay", 0);
 
@@ -289,7 +293,7 @@ public class Robot extends TimedRobot {
 			timeCheck = false;
 		}
 
-		SmartDashboard.putNumber("Elapsed Time", Time.get());
+//		SmartDashboard.putNumber("Elapsed Time", Time.get());
 
 		switch (autoMove) {
 
@@ -456,25 +460,19 @@ public class Robot extends TimedRobot {
 		autonomous = false;
 
 		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
-		SmartDashboard.putNumber("Wrist Amps", PowerPanel.zero());
-		SmartDashboard.putNumber("Shoulder Amps", PowerPanel.one());
-
-		SmartDashboard.putNumber("Winch1 Amps", PowerPanel.zero());
-		SmartDashboard.putNumber("Winch2 Amps", PowerPanel.one());
-
 
 		xbox1.setDeadband(0.09);
 		xbox2.setDeadband(0.09);
 
-		SmartDashboard.putNumber("DistanceFR", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
-		SmartDashboard.putNumber("DistanceFL", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance());
-		SmartDashboard.putNumber("DistanceBL", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance());
-		SmartDashboard.putNumber("DistanceBR", SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getDistance());
-
-		SmartDashboard.putNumber("AngleFR", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle());
-		SmartDashboard.putNumber("AngleFL", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getAngle());
-		SmartDashboard.putNumber("AngleBL", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getAngle());
-		SmartDashboard.putNumber("AngleBR", SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle());
+//		SmartDashboard.putNumber("DistanceFR", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getDistance());
+//		SmartDashboard.putNumber("DistanceFL", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getDistance());
+//		SmartDashboard.putNumber("DistanceBL", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getDistance());
+//		SmartDashboard.putNumber("DistanceBR", SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getDistance());
+//
+//		SmartDashboard.putNumber("AngleFR", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle());
+//		SmartDashboard.putNumber("AngleFL", SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getAngle());
+//		SmartDashboard.putNumber("AngleBL", SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getAngle());
+//		SmartDashboard.putNumber("AngleBR", SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle());
 
 		if (xbox1.Back()) {
 			imu.reset(0); // robot should be perpendicular to field when pressed.
@@ -528,10 +526,10 @@ public class Robot extends TimedRobot {
 			xbox2.stopRumble();
 		}
 
-		SmartDashboard.putNumber("FWD", FWD);
-		SmartDashboard.putNumber("STR", STR);
-		SmartDashboard.putNumber("RCW", RCW);
-		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+//		SmartDashboard.putNumber("FWD", FWD);
+//		SmartDashboard.putNumber("STR", STR);
+//		SmartDashboard.putNumber("RCW", RCW);
+//		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 		double headingDeg = imu.getAngle();
 		double headingRad = Math.toRadians(headingDeg);
@@ -555,7 +553,7 @@ public class Robot extends TimedRobot {
 			}
 		}
 
-		SmartDashboard.putBoolean("Field Oriented", fieldOriented);
+//		SmartDashboard.putBoolean("Field Oriented", fieldOriented);
 
 		if (xbox1.LStickButton()) {
 			FWD = 0.0;
@@ -569,9 +567,9 @@ public class Robot extends TimedRobot {
 			RCW = 0.0;
 		}
 
-		SmartDashboard.putNumber("FWD", FWD);
-		SmartDashboard.putNumber("STR", STR);
-		SmartDashboard.putNumber("RCW", RCW);
+//		SmartDashboard.putNumber("FWD", FWD);
+//		SmartDashboard.putNumber("STR", STR);
+//		SmartDashboard.putNumber("RCW", RCW);
 
 		// rotate clockwise command (-1.0 to 1.0)
 		// Limited to half speed because of wheel direction calculation issues when rotating quickly
@@ -586,7 +584,7 @@ public class Robot extends TimedRobot {
 
 
 		if (robotBackwards) {
-			driveTrain.drive(new Vector(-STR, -FWD), -RCW); // x = str, y = fwd, rotation = rcw
+			driveTrain.drive(new Vector(-STR, FWD), -RCW); // x = str, y = fwd, rotation = rcw
 		} else {
 			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		}
