@@ -17,7 +17,7 @@ public class SwerveModule {
     private double distance;
     private double previousDistance = 0;
     private double previousRobotDistance = 0.0;
-    private double angleError;
+    private double trueError;
     private double rightSum = 0;
     private double forwardSum = 0;
     private SwerveMotor swerveMotor;
@@ -41,7 +41,7 @@ public class SwerveModule {
 
         swerveMotor = new SwerveMotor(canPortC, canPortCC);
 
-        anglePID = new PIDController(0.002, 0.0, 0.0);
+        anglePID = new PIDController(0.0013, 0.0, 0.0);
         anglePID.setContinuous();
         anglePID.setInputRange(0.0, 360.0);
         anglePID.setOutputRange(-1.0, 1.0);
@@ -58,7 +58,7 @@ public class SwerveModule {
 
         angle = swerveMotor.getAngle();
 
-        angleError = MathUtils.calculateError(angleCommand, angle);
+        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
 
         if (wheelReversed) {
             delta = previousDistance - distance;
@@ -70,15 +70,14 @@ public class SwerveModule {
          * If the wheel has to move over 90 degrees
          * go opposite to command and reverse translation
          */
-//        if (Math.abs(angleError) > TICKS_PER_REVOLUTION/4.0) {
-//            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
-//            speedCommand *= -1;
-//            angleError = MathUtils.reverseErrorDirection(angleError);
-//
-//            wheelReversed = true;
-//        } else {
-//            wheelReversed = false;
-//        }
+        if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
+            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
+            speedCommand *= -1;
+
+            wheelReversed = true;
+        } else {
+            wheelReversed = false;
+        }
 
 //        anglePID.setPID(SmartDashboard.getNumber("kP", 0.0), SmartDashboard.getNumber("kI", 0.0), SmartDashboard.getNumber("kD", 0.0));
         anglePID.setInput(angle);
@@ -105,15 +104,14 @@ public class SwerveModule {
 //        anglePID.setSetpoint(spin+=7.0);
 //        spin%=360;
 
+//        if (id == 3 /*|| id == 4*/) {
+            swerveMotor.set(speedCommand, anglePID.performPID());
+//        }
 
-        SmartDashboard.putNumber("Angle", Math.abs(angle));
-        SmartDashboard.putNumber("Angle Command", Math.abs(angleCommand));
-        SmartDashboard.putNumber("Angle Error", Math.abs(anglePID.getError()));
-
-        swerveMotor.set(speedCommand, anglePID.performPID());
-
-
-        SmartDashboard.putNumber("Angle PID", anglePID.performPID());
+        if (id == 3) {
+            SmartDashboard.putNumber("BL Angle Command", angleCommand);
+            SmartDashboard.putNumber("BL Angle", angle);
+        }
 
         previousDistance = distance;
         previousRobotDistance = SwerveDrivetrain.getRobotDistance();
@@ -123,6 +121,10 @@ public class SwerveModule {
     public void setID(int id) {
         this.id = id;
         swerveMotor.setID(id);
+    }
+
+    public void setDrift(String[] drift) {
+        swerveMotor.setDrift(drift);
     }
 
     public double getAngle() {
@@ -154,7 +156,7 @@ public class SwerveModule {
     }
 
     public double getAngleError() {
-        return angleError;
+        return trueError;
     }
 
     public double getDistance() {

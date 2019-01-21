@@ -5,8 +5,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utilities.MathUtils;
 
 class SwerveMotor {
-    private static final int CAN_TIMEOUT = 20;
+    private static final int CAN_TIMEOUT = 40;
     private static final double SMALL_NUMBER = 0.05;
+
+    private double[] moduleDrift;
 
     private CANSparkMax clockwiseMotor;
     private CANSparkMax counterMotor;
@@ -48,6 +50,8 @@ class SwerveMotor {
         clockwiseMotor.setCANTimeout(CAN_TIMEOUT);
         counterMotor.setCANTimeout(CAN_TIMEOUT);
 
+        moduleDrift = new double[2];
+
         clockwiseEncoder = new CANEncoder(clockwiseMotor);
         counterEncoder = new CANEncoder(counterMotor);
 
@@ -79,6 +83,12 @@ class SwerveMotor {
     void set(double speedCommand, double rotationCommand) {
 //        speedCommand*=0.8;
 //        rotationCommand*=0.8;
+        if (speedCommand > SMALL_NUMBER) {
+            rotationCommand += speedCommand*moduleDrift[0];
+        } else if (speedCommand < -SMALL_NUMBER) {
+            rotationCommand += speedCommand*moduleDrift[1];
+        }
+
         double clockwiseCommand = speedCommand + rotationCommand;
         double counterCommand = speedCommand - rotationCommand;
         double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
@@ -122,19 +132,17 @@ class SwerveMotor {
             counterMotor.stopMotor();
         }
 
-        SmartDashboard.putNumber("Clockwise Command", clockwiseCommand);
-        SmartDashboard.putNumber("Counter Command", counterCommand);
-
 //        if (clockwiseEncoder.getVelocity() == 0.0 || counterEncoder.getVelocity() == 0.0) {
 //            System.out.println("Bad: " + zeros++);
 //        } else {
 //            System.out.println("Good: " + goods++);
 //        }
 
-
-        SmartDashboard.putNumber("Motor1 Velocity", clockwiseEncoder.getVelocity());
-        SmartDashboard.putNumber("Motor2 Velocity", -counterEncoder.getVelocity());
-
+//        System.out.println(clockwiseEncoder.getVelocity() + counterEncoder.getVelocity());
+        if (id == 3) {
+            System.out.println(lastValidDistance1 + " | " + lastValidDistance2 + " :Used");
+            System.out.println(getAngle());
+        }
         }
 
 
@@ -143,19 +151,41 @@ class SwerveMotor {
      */
     double getAngle() {
         return MathUtils.resolveDeg((lastValidDistance1 + lastValidDistance2)*36.0);
+
+
     }
 
     /**
      * @return Distance the module has translated
      */
     double getDistance() {
-        if (clockwiseEncoder.getPosition() != 0.0) {
-            lastValidDistance1 = clockwiseEncoder.getPosition();
+
+        if (lastValidDistance1 != clockwiseEncoder.getPosition() && lastValidDistance2 != counterEncoder.getPosition()) {
+            if (clockwiseEncoder.getPosition() != 0.0 && counterEncoder.getPosition() != 0.0) {
+                lastValidDistance1 = clockwiseEncoder.getPosition();
+                lastValidDistance2 = counterEncoder.getPosition();
+            } else {
+                lastValidDistance1 += Math.signum(lastValidDistance1) * lastValidVelocity1 * (4.72 / 5676);
+//                if (id == 3) {
+//                    System.out.println(lastValidDistance1);
+//                }
+
+
+//            if (counterEncoder.getPosition() != 0.0) {
+//                lastValidDistance2 = counterEncoder.getPosition();
+//            } else {
+                lastValidDistance2 += Math.signum(lastValidDistance2) * lastValidVelocity2 * (4.72 / 5676);
+//                if (id == 3) {
+//                    System.out.println(lastValidDistance2);
+//                }
+//            }
+            }
         }
 
-        if (counterEncoder.getPosition() != 0.0) {
-            lastValidDistance2 = counterEncoder.getPosition();
+        if (id == 3) {
+            System.out.println(clockwiseEncoder.getPosition() + " | " + counterEncoder.getPosition() + " :Actual");
         }
+
         return lastValidDistance1 - lastValidDistance2;
     }
 
@@ -170,5 +200,10 @@ class SwerveMotor {
 
     void setID(int id) {
         this.id = id;
+    }
+
+    void setDrift(String[] drift) {
+        moduleDrift[0] = Double.parseDouble(drift[0]);
+        moduleDrift[1] = Double.parseDouble(drift[1]);
     }
 }
