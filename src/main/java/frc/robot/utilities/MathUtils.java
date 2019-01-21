@@ -81,19 +81,22 @@ public class MathUtils {
 
 	/**
 	 * Calculates the error between a sensor and desired direction
-	 * @param direction Direction in degrees
-	 * @param sensor Sensor in degrees
+	 * @param setpoint Direction in degrees
+	 * @param input Sensor in degrees
 	 * @return Error
 	 */
-	public static double calculateError(double direction, double sensor) {
-		double error = direction - sensor;
-		if (Math.abs(error) > 300) {
-			if (error < 0.0) {
-				error += (360.0);
+	public static double calculateContinuousError(double setpoint, double input, double maximumInput, double minimumInput) {
+		// Calculate the error signal
+		double error = setpoint - input;
+
+		if (Math.abs(error) > (maximumInput - minimumInput) / 2) {
+			if (error > 0) {
+				error = error - maximumInput + minimumInput;
 			} else {
-				error -= (360.0);
+				error = error + maximumInput - minimumInput;
 			}
 		}
+
 		return error;
 	}
 
