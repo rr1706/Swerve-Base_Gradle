@@ -3,9 +3,14 @@ front_left_pos=-11.486,12.582
 back_left_pos=-11.486,-12.918
 back_right_pos=11.236,-12.582
 
-front_right_ports=0,1
-front_left_ports=2,3
-back_left_ports=4,5
-back_right_ports=6,7
+front_right_ports=2,3
+front_left_ports=0,1
+back_left_ports=6,7
+back_right_ports=4,5
 
-robot_backwards=false
+front_right_drift=0.0055,0.002
+front_left_drift=0.0205,0.019
+back_left_drift=0.0038,-0.002
+back_right_drift=-0.0023,-0.0075
+
+robot_backwards=true
