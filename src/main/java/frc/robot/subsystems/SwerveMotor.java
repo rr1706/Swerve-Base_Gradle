@@ -165,7 +165,7 @@ class SwerveMotor {
                 lastValidDistance1 = clockwiseEncoder.getPosition();
                 lastValidDistance2 = counterEncoder.getPosition();
             } else {
-                lastValidDistance1 += Math.signum(lastValidDistance1) * lastValidVelocity1 * (4.72 / 5676);
+                lastValidDistance1 += Math.signum(lastValidDistance1) * lastValidVelocity1 * (4.73 / 5676);
 //                if (id == 3) {
 //                    System.out.println(lastValidDistance1);
 //                }
@@ -174,13 +174,15 @@ class SwerveMotor {
 //            if (counterEncoder.getPosition() != 0.0) {
 //                lastValidDistance2 = counterEncoder.getPosition();
 //            } else {
-                lastValidDistance2 += Math.signum(lastValidDistance2) * lastValidVelocity2 * (4.72 / 5676);
+                lastValidDistance2 += Math.signum(lastValidDistance2) * lastValidVelocity2 * (4.73 / 5676);
 //                if (id == 3) {
 //                    System.out.println(lastValidDistance2);
 //                }
 //            }
             }
         }
+
+
 
         if (id == 3) {
             System.out.println(clockwiseEncoder.getPosition() + " | " + counterEncoder.getPosition() + " :Actual");
