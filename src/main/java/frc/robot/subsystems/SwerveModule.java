@@ -83,6 +83,10 @@ public class SwerveModule {
         anglePID.setInput(angle);
         anglePID.setSetpoint(angleCommand);
 
+//        if (id == 3) {
+//            System.out.println(angleCommand + " :Command");
+//        }
+
         /*
          * If wheel is not translating, keep the wheel turned where it is
          */
@@ -108,9 +112,11 @@ public class SwerveModule {
             swerveMotor.set(speedCommand, anglePID.performPID());
 //        }
 
-        if (id == 3) {
+        if (id == 4) {
             SmartDashboard.putNumber("BL Angle Command", angleCommand);
             SmartDashboard.putNumber("BL Angle", angle);
+            SmartDashboard.putNumber("BL Error", anglePID.getError());
+            System.out.println(anglePID.getError() + " :Error");
         }
 
         previousDistance = distance;

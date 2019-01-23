@@ -542,10 +542,13 @@ public class Robot extends TimedRobot {
 		previousOrientedButton = currentOrientedButton;
 
 		if (fieldOriented) {
+			//Ethan doing stuff here
 			Vector commands;
 			commands = MathUtils.convertOrientation(headingRad, FWD, STR);
-			FWD = commands.getY();
-			STR = commands.getX();
+			FWD = 0.3;
+			STR = 0.0;
+//			FWD = commands.getY();
+//			STR = commands.getX();
 		} else {
 			if (!robotBackwards) {
 				FWD *= -1;
