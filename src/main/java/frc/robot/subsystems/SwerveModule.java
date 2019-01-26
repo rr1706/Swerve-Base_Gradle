@@ -41,7 +41,7 @@ public class SwerveModule {
 
         swerveMotor = new SwerveMotor(canPortC, canPortCC);
 
-        anglePID = new PIDController(0.0013, 0.0, 0.0);
+        anglePID = new PIDController(0.0014, 0.0, 0.0);
         anglePID.setContinuous();
         anglePID.setInputRange(0.0, 360.0);
         anglePID.setOutputRange(-1.0, 1.0);
@@ -110,13 +110,13 @@ public class SwerveModule {
 
 //        if (id == 3 /*|| id == 4*/) {
             swerveMotor.set(speedCommand, anglePID.performPID());
+
 //        }
 
-        if (id == 4) {
+        if (id == 3) {
             SmartDashboard.putNumber("BL Angle Command", angleCommand);
             SmartDashboard.putNumber("BL Angle", angle);
             SmartDashboard.putNumber("BL Error", anglePID.getError());
-            System.out.println(anglePID.getError() + " :Error");
         }
 
         previousDistance = distance;

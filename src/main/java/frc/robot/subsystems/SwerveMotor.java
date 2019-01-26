@@ -134,18 +134,7 @@ class SwerveMotor {
             counterMotor.stopMotor();
         }
 
-//        if (clockwiseEncoder.getVelocity() == 0.0 || counterEncoder.getVelocity() == 0.0) {
-//            System.out.println("Bad: " + zeros++);
-//        } else {
-//            System.out.println("Good: " + goods++);
-//        }
-
-//        System.out.println(clockwiseEncoder.getVelocity() + counterEncoder.getVelocity());
-        if (id == 4) {
-            System.out.println(lastValidDistance1 + " | " + lastValidDistance2 + " :Used");
-//            System.out.println(getAngle());
-        }
-        }
+    }
 
 
     /**
@@ -162,33 +151,12 @@ class SwerveMotor {
      */
     double getDistance() {
 
-        if (lastValidDistance1 != clockwiseEncoder.getPosition() && lastValidDistance2 != counterEncoder.getPosition()) {
-            if (clockwiseEncoder.getPosition() != 0.0 && counterEncoder.getPosition() != 0.0) {
+//        if (lastValidDistance1 != clockwiseEncoder.getPosition() && lastValidDistance2 != counterEncoder.getPosition()) {
+//            if (clockwiseEncoder.getPosition() != 0.0 && counterEncoder.getPosition() != 0.0) {
                 lastValidDistance1 = clockwiseEncoder.getPosition();
                 lastValidDistance2 = counterEncoder.getPosition();
-            } else {
-                lastValidDistance1 += Math.signum(lastValidDistance1) * lastValidVelocity1 * (4.71 / 5676);
-//                if (id == 3) {
-//                    System.out.println(lastValidDistance1);
-//                }
-
-
-//            if (counterEncoder.getPosition() != 0.0) {
-//                lastValidDistance2 = counterEncoder.getPosition();
-//            } else {
-                lastValidDistance2 += Math.signum(lastValidDistance2) * lastValidVelocity2 * (4.71 / 5676);
-//                if (id == 3) {
-//                    System.out.println(lastValidDistance2);
-//                }
 //            }
-            }
-        }
-
-
-
-        if (id == 4) {
-            System.out.println(clockwiseEncoder.getPosition() + " | " + counterEncoder.getPosition() + " :Actual");
-        }
+//        }
 
         return lastValidDistance1 - lastValidDistance2;
     }

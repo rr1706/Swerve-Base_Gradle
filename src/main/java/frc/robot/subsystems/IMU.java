@@ -37,7 +37,7 @@ public class IMU {
 	 * @return Angle in degrees
 	 */
 	public double getAngle() {
-		return MathUtils.resolveDeg(ahrs.getYaw() + offset);
+		return MathUtils.resolveDeg(ahrs.getYaw() - offset);
 	}
 
 	/**

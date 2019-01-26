@@ -1,16 +1,16 @@
-front_right_pos=8.25,8.25
-front_left_pos=-8.25,8.25
-back_left_pos=-8.25,-8.25
-back_right_pos=8.25,-8.25
+front_right_pos=-8.25,8.25
+front_left_pos=8.25,8.25
+back_left_pos=8.25,-8.25
+back_right_pos=-8.25,-8.25
 
 front_right_ports=0,1
-front_left_ports=2,3
+front_left_ports=6,7
 back_left_ports=4,5
-back_right_ports=6,7
+back_right_ports=2,3
 
-front_right_drift=0.0205,0.019
-front_left_drift=0.0055,0.002
-back_left_drift=-0.0023,-0.0075
-back_right_drift=0.0038,-0.002
+front_right_drift=0.0,0.0
+front_left_drift=0.0,0.0
+back_left_drift=0.0,0.0
+back_right_drift=0.0,0.0
 
 robot_backwards=true
