@@ -60,6 +60,7 @@ class SwerveMotor {
         counterMotor.setInverted(false);
 
         clockwisePID = clockwiseMotor.getPIDController();
+
         clockwisePID.setP(motorP);
         clockwisePID.setI(motorI);
         clockwisePID.setD(motorD);
