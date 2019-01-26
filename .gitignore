@@ -3,8 +3,6 @@
 *.bin
 *.lock
 *.class
-*.jar
-*.properties
 *.xml
 *.iml
 *.dll
@@ -16,3 +14,8 @@
 build/debug/debuginfo.json
 .vscode/settings.json
 .vscode/launch.json
+build/libs/2019BaseProject.jar
+build/libs/Swerve-Base_Gradle.jar
+.gradle/vcs-1/gc.properties
+.gradle/buildOutputCleanup/cache.properties
+.gradle/5.0/gc.properties
