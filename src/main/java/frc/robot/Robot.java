@@ -67,9 +67,12 @@ public class Robot extends TimedRobot {
 
 	private int dx = -1;
 
-	public static double FWD;
+	private double FWD;
 	private double STR;
 	private double RCW;
+
+	private double[] prevFWD = {0.0, 0.0, 0.0, 0.0, 0.0};
+	private double[] prevSTR = {0.0, 0.0, 0.0, 0.0, 0.0};
 
 	private double wheelRamp = 0;
 	private double rampRate = 0;
@@ -97,6 +100,11 @@ public class Robot extends TimedRobot {
 
 	private boolean rumble = false;
 	private int rumbleTime = 0;
+
+	private Acceleration accel;
+	private Acceleration decelFWD;
+	private Acceleration decelSTR;
+	private int cmdCounter = 0;
 
 	private void keepAngle() {
 		// LABEL keepAngle
@@ -236,6 +244,10 @@ public class Robot extends TimedRobot {
 		SwerveCompensate.setTolerance(1.0);
 
 		SwerveCompensate.enable();
+
+		accel = new Acceleration();
+		decelFWD = new Acceleration();
+		decelSTR = new Acceleration();
 	}
 
 	public void autonomousInit() {
@@ -485,28 +497,33 @@ public class Robot extends TimedRobot {
 		}
 
 		// forward command (-1.0 to 1.0)
-		FWD = -xbox1.LStickY() / 10.5 * Ds.getBatteryVoltage();
+		FWD = -xbox1.LStickY() / 10.5 * Ds.getBatteryVoltage() * 0.8;
 
 		// strafe command (-1.0 to 1.0)
-		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage();
+		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage() * 0.8;
 
 		// Increase the time it takes for the robot to accelerate
-		currentRampTime = Time.get();
-		if (FWD != 0.0 || STR != 0.0 || RCW != 0.0) {
-			if (wheelRamp < 1.0) {
-				rampRate = currentRampTime - prevRampTime;
 
-				// rampRate is x if this is set to a different equation
-				wheelRamp = rampRate;
-			} else {
-				wheelRamp = 1.0;
-			}
+		if (FWD != 0.0 || STR != 0.0) {
+			FWD *= accel.calculate();
+			STR *= accel.calculate();
+			decelFWD.set(prevFWD[cmdCounter], 0.0, 0.4);
+			decelSTR.set(prevSTR[cmdCounter], 0.0, 0.4);
 
-			FWD *= wheelRamp;
-			STR *= wheelRamp;
 		} else {
-			prevRampTime = currentRampTime;
+			accel.set(0.0, 1.0, 0.7);
+			FWD = decelFWD.calculate();
+			STR = decelSTR.calculate();
 		}
+		prevFWD[cmdCounter] = FWD;
+		prevSTR[cmdCounter] = STR;
+		cmdCounter++;
+		if (cmdCounter > 4) {
+			cmdCounter = 0;
+		}
+
+		System.out.println(STR);
+
 
 		if (imu.collisionDetected()) {
 			xbox1.rumbleRight(1.0);
@@ -542,13 +559,10 @@ public class Robot extends TimedRobot {
 		previousOrientedButton = currentOrientedButton;
 
 		if (fieldOriented) {
-			//Ethan doing stuff here
 			Vector commands;
 			commands = MathUtils.convertOrientation(headingRad, FWD, STR);
-			FWD = 0.3;
-			STR = 0.0;
-//			FWD = commands.getY();
-//			STR = commands.getX();
+			FWD = commands.getY();
+			STR = commands.getX();
 		} else {
 			if (!robotBackwards) {
 				FWD *= -1;
@@ -587,7 +601,7 @@ public class Robot extends TimedRobot {
 
 
 		if (robotBackwards) {
-			driveTrain.drive(new Vector(-STR, FWD), -RCW); // x = str, y = fwd, rotation = rcw
+			driveTrain.drive(new Vector(-STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		} else {
 			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		}
