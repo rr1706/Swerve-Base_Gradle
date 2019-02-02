@@ -259,7 +259,7 @@ public class Robot extends TimedRobot {
 
 		String choice;
 
-		choice = "/home/lvuser/Forward.csv";
+		choice = "/home/lvuser/deploy/Forward.csv";
 
 
 		SmartDashboard.putString("Autonomous File", choice);
@@ -497,21 +497,24 @@ public class Robot extends TimedRobot {
 		}
 
 		// forward command (-1.0 to 1.0)
-		FWD = -xbox1.LStickY() / 10.5 * Ds.getBatteryVoltage() * 0.8;
-
+		FWD = -xbox1.LStickY()/* / 10.5 * Ds.getBatteryVoltage() * 1.0*/;
+//		System.out.println(FWD + "||" + STR + "||" + RCW);
 		// strafe command (-1.0 to 1.0)
-		STR = xbox1.LStickX() / 10.5 * Ds.getBatteryVoltage() * 0.8;
+		STR = xbox1.LStickX() /*/ 10.5 * Ds.getBatteryVoltage() * 1.0*/;
 
 		// Increase the time it takes for the robot to accelerate
 
 		if (FWD != 0.0 || STR != 0.0) {
 			FWD *= accel.calculate();
 			STR *= accel.calculate();
-			decelFWD.set(prevFWD[cmdCounter], 0.0, 0.4);
-			decelSTR.set(prevSTR[cmdCounter], 0.0, 0.4);
+
+			if (Math.abs(FWD) > 0.3 || Math.abs(STR) > 0.3) {
+				decelFWD.set(prevFWD[cmdCounter], 0.0, 0.35);
+				decelSTR.set(prevSTR[cmdCounter], 0.0, 0.35);
+			}
 
 		} else {
-			accel.set(0.0, 1.0, 0.7);
+			accel.set(0.0, 1.0, 0.6);
 			FWD = decelFWD.calculate();
 			STR = decelSTR.calculate();
 		}
@@ -522,7 +525,7 @@ public class Robot extends TimedRobot {
 			cmdCounter = 0;
 		}
 
-		System.out.println(STR);
+//		System.out.println(STR);
 
 
 		if (imu.collisionDetected()) {
@@ -591,6 +594,7 @@ public class Robot extends TimedRobot {
 		// rotate clockwise command (-1.0 to 1.0)
 		// Limited to half speed because of wheel direction calculation issues when rotating quickly
 		// Let robot rotate at full speed if it is not translating
+
 		if (FWD + STR == 0.0) {
 			RCW = xbox1.RStickX();
 		} else {
@@ -637,10 +641,10 @@ public class Robot extends TimedRobot {
 			dx = xbox1.DPad();
 		}
 
-		System.out.println("FL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getAngle()));
-		System.out.println("BL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getAngle()));
-		System.out.println("BR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle()));
-		System.out.println("FR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle()));
+//		System.out.println("FL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).getAngle()));
+//		System.out.println("BL Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).getAngle()));
+//		System.out.println("BR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).getAngle()));
+//		System.out.println("FR Angle: " + MathUtils.resolveDeg(SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).getAngle()));
 
 		// Move a single motor from the drivetrain depending on Dpad and right stick
 //		if (dx == 0) {

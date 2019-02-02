@@ -6,7 +6,7 @@ import frc.robot.utilities.MathUtils;
 
 class SwerveMotor {
     private static final int CAN_TIMEOUT = 20;
-    private static final double SMALL_NUMBER = 0.05;
+    private static final double SMALL_NUMBER = 0.025; //Was 0.05
 
     private double[] moduleDrift;
 
@@ -19,7 +19,7 @@ class SwerveMotor {
     private CANPIDController clockwisePID;
     private CANPIDController counterPID;
 //Ethan doing thing
-    private double motorP = 3e-4;
+    private double motorP = 0.001;
     //private double motorP = 4e-4;
     private double motorI = 0.0;
     private double motorD = 2e-5;
@@ -85,10 +85,19 @@ class SwerveMotor {
     void set(double speedCommand, double rotationCommand) {
 //        speedCommand*=0.8;
 //        rotationCommand*=0.8;
+
+        if (Math.abs(speedCommand) + Math.abs(rotationCommand) < 0.3) {
+            clockwisePID.setP(0.0004);
+            counterPID.setP(0.0004);
+        } else {
+            clockwisePID.setP(motorP);
+            counterPID.setP(motorP);
+        }
+
         if (speedCommand > SMALL_NUMBER) {
-            rotationCommand += speedCommand*moduleDrift[0];
+            rotationCommand += speedCommand * moduleDrift[0];
         } else if (speedCommand < -SMALL_NUMBER) {
-            rotationCommand += speedCommand*moduleDrift[1];
+            rotationCommand += speedCommand * moduleDrift[1];
         }
 
         double clockwiseCommand = speedCommand + rotationCommand;
@@ -114,9 +123,19 @@ class SwerveMotor {
             lastValidVelocity2 = counterEncoder.getVelocity();
         }
 
-//        if (id == 1) {
-//            System.out.println("C: " + speedCommand + " | CC: " + rotationCommand);
-//        }
+        if (id == 1) {
+            SmartDashboard.putNumber("Front Right Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Front Right Velocity", clockwiseEncoder.getVelocity());
+        } else if (id == 2) {
+            SmartDashboard.putNumber("Front Left Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Front Left Velocity", clockwiseEncoder.getVelocity());
+        } else if (id == 3) {
+            SmartDashboard.putNumber("Back Right Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Back Right Velocity", clockwiseEncoder.getVelocity());
+        } else {
+            SmartDashboard.putNumber("Back Left Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Back Left Velocity", clockwiseEncoder.getVelocity());
+        }
 
         if (Math.abs(clockwiseCommand) > SMALL_NUMBER) {
             clockwiseCommand*=maxRPM;
