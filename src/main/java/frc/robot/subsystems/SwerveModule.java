@@ -29,6 +29,11 @@ public class SwerveModule {
     private double keepPIDAngle;
     private double angle;
     private boolean wheelReversed;
+    double joerot = 400.0;
+
+    double kP = 9.4e-4;
+    double kI = 0.0;
+    double kD = 0.0;
 
     private double maxRPM = 5676;
 
@@ -65,7 +70,11 @@ public class SwerveModule {
         anglePID.setOutputRange(-1.0, 1.0);
         anglePID.enable();
 
+        SmartDashboard.putNumber("kP", kP);
+        SmartDashboard.putNumber("kI", kI);
+        SmartDashboard.putNumber("kD", kD);
     }
+
 
     void drive() {
         distance = swerveMotor.getDistance() * DISTANCE_PER_PULSE;
@@ -92,30 +101,37 @@ public class SwerveModule {
          * go opposite to command and reverse translation
          */
 
-//        if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
-//           angleCommand = MathUtils.reverseWheelDirection(angleCommand);
-//            speedCommand *= -1;
-//
-//            wheelReversed = true;
-//        } else {
-//            wheelReversed = false;
-//       }
-//
-//        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
+         if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
+            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
+            speedCommand *= -1;
+
+            wheelReversed = true;
+        } else {
+            wheelReversed = false;
+       }
+
+        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
 
 
         //Relatively stable value of kP is 4e-4
         //Good ratio; 30:1:1
-//        anglePID.setPID(SmartDashboard.getNumber("kP", 0.94e-3/*0.9e-3, 1e-3*/), SmartDashboard.getNumber("kI", 0.0/*6.8e-6, 1e-5*/), SmartDashboard.getNumber("kD", 0.0/*1.9e-4, 2e-4*/));
+
+
+        anglePID.setPID(SmartDashboard.getNumber("kP", kP/*0.9e-3, 1e-3*/), SmartDashboard.getNumber("kI", kI/*6.8e-6, 1e-5*/), SmartDashboard.getNumber("kD", kD/*1.9e-4, 2e-4*/));
+
+//        kP = SmartDashboard.getNumber("kP", kP);
+//        kI = SmartDashboard.getNumber("kI", kI);
+//        kD = SmartDashboard.getNumber("kD", kD);
+
 /* TODO Old offsets:
 front_right_drift=-0.0051,-0.009
 front_left_drift=0.00236,-0.004
 back_left_drift= -0.0025,-0.0085
 back_right_drift=0.0059,0.0027
  */
-//        anglePID.setInput(angle);
-//
-//        anglePID.setSetpoint(angleCommand);
+        anglePID.setInput(angle);
+
+        anglePID.setSetpoint(angleCommand);
 //        anglePID.setSetpoint(90*speedCommand);
 
 
@@ -161,21 +177,27 @@ back_right_drift=0.0059,0.0027
 //            rotationCommand = 0.0;
 //        }
 
-        if (Math.abs(trueError) > 15) {
-            rotationCommand = Math.signum(trueError)*0.1;
+        if (Math.abs(trueError) > 10) {
+            rotationCommand = trueError/1100.0;
         } else {
             rotationCommand = 0.0;
         }
 //        System.out.println(rotationCommand);
-//        if (id == 3) {
-//        rotationCommand = 2000.0/maxRPM;
+//        if ((id == 4) || (id == 4)) {
+//        rotationCommand = joerot/maxRPM;
+//        joerot = joerot + 0.0;
         swerveMotor.set(speedCommand, rotationCommand);
 //        swerveMotor.set(speedCommand, anglePID.performPID());
 
 //        } else {
 //            swerveMotor.set(0.0, 0.0);
 //        }
-
+/*
+front_right_drift=-0.0017,0.0
+front_left_drift=0.001,0.0
+back_left_drift=-0.001,0.0
+back_right_drift=0.003,0.0
+ */
 
         rightDelta = delta * Math.sin(Math.toRadians(angle));
         forwardDelta = delta * Math.cos(Math.toRadians(angle));

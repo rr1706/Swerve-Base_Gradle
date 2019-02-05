@@ -127,8 +127,7 @@ public class Robot extends TimedRobot {
 
 		} else {
 
-			SwerveCompensate.setPID(0.02, 0.0, 0.0);
-			SwerveCompensate.setTolerance(12);
+			SwerveCompensate.setPID(0.007, 0.0, 0.0);
 
 			SwerveCompensate.setInput(imu.getAngle());
 			SwerveCompensate.setSetpoint(keepAngle);
@@ -546,10 +545,10 @@ public class Robot extends TimedRobot {
 			xbox2.stopRumble();
 		}
 
-//		SmartDashboard.putNumber("FWD", FWD);
-//		SmartDashboard.putNumber("STR", STR);
-//		SmartDashboard.putNumber("RCW", RCW);
-//		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
+		SmartDashboard.putNumber("FWD", FWD);
+		SmartDashboard.putNumber("STR", STR);
+		SmartDashboard.putNumber("RCW", RCW);
+		SmartDashboard.putNumber("IMU Angle", imu.getAngle());
 
 		double headingDeg = imu.getAngle();
 		double headingRad = Math.toRadians(headingDeg);
@@ -605,6 +604,7 @@ public class Robot extends TimedRobot {
 
 
 		if (robotBackwards) {
+			//FIXME: Reverse RCW to fix point rotation issue
 			driveTrain.drive(new Vector(-STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		} else {
 			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw

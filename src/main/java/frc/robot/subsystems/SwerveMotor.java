@@ -86,7 +86,8 @@ class SwerveMotor {
 //        speedCommand*=0.8;
 //        rotationCommand*=0.8;
 
-        if (Math.abs(speedCommand) + Math.abs(rotationCommand) < 0.3) {
+        //Todo 0.5 might not be perfect, and the best relationship might not be linear at all
+        if (Math.abs(speedCommand) + Math.abs(rotationCommand) < 0.5/*0.3*/) {
             clockwisePID.setP(0.0004);
             counterPID.setP(0.0004);
         } else {
@@ -102,26 +103,27 @@ class SwerveMotor {
 
         double clockwiseCommand = speedCommand + rotationCommand;
         double counterCommand = speedCommand - rotationCommand;
-        double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
-        double counterOvershoot = Math.abs(counterCommand) - 1;
+//        double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
+//        double counterOvershoot = Math.abs(counterCommand) - 1;
+//
+//        if (clockwiseOvershoot > 0) {
+//            clockwiseCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
+//            counterCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
+//        }
+//
+//        if (counterOvershoot > 0) {
+//            counterCommand -= counterOvershoot * Math.signum(counterCommand);
+//            clockwiseCommand -= counterOvershoot * Math.signum(counterCommand);
+//        }
 
-        if (clockwiseOvershoot > 0) {
-            clockwiseCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
-            counterCommand -= clockwiseOvershoot * Math.signum(clockwiseCommand);
-        }
 
-        if (counterOvershoot > 0) {
-            counterCommand -= counterOvershoot * Math.signum(counterCommand);
-            clockwiseCommand -= counterOvershoot * Math.signum(counterCommand);
-        }
-
-        if (clockwiseCommand != 0.0 && clockwiseEncoder.getVelocity() != 0.0 || clockwiseCommand == 0.0) {
-            lastValidVelocity1 = clockwiseEncoder.getVelocity();
-        }
-
-        if (counterCommand != 0.0 && counterEncoder.getVelocity() != 0.0 || counterCommand == 0.0) {
-            lastValidVelocity2 = counterEncoder.getVelocity();
-        }
+//        if (clockwiseCommand != 0.0 && clockwiseEncoder.getVelocity() != 0.0 || clockwiseCommand == 0.0) {
+//            lastValidVelocity1 = clockwiseEncoder.getVelocity();
+//        }
+//
+//        if (counterCommand != 0.0 && counterEncoder.getVelocity() != 0.0 || counterCommand == 0.0) {
+//            lastValidVelocity2 = counterEncoder.getVelocity();
+//        }
 
         if (id == 1) {
             SmartDashboard.putNumber("Front Right Ticks", clockwiseEncoder.getPosition());
