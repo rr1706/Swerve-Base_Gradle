@@ -13,7 +13,7 @@ public class RRLogger {
     private static ConcurrentLinkedQueue<String> m_DataBuffer = new ConcurrentLinkedQueue<String>();
     private static PrintWriter m_LogFile;
     private static PrintWriter m_DataLogFile;
-    private static String directory = "/home/lvuser/d/";
+    private static String directory = "/home/lvuser/e/";
     private static String logFileName = "power";
     private static String dataDumpFileName = "data";
     private static long startTime;
@@ -40,7 +40,7 @@ public class RRLogger {
 //            } catch (IOException e) {
 //                e.printStackTrace();
 //            }
-//        } else {
+//        } else { {
 //            try {
 //                f.createNewFile();
 //            } catch (IOException e) {

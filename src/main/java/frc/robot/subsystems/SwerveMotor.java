@@ -88,8 +88,8 @@ class SwerveMotor {
         counterPID.setFF(motorF);
         counterPID.setOutputRange(kMinOutput, kMaxOutput);
 
-        clockwiseMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
-        counterMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
+        clockwiseMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 5);
+        counterMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 5);
 //        System.out.println(clockwiseMotor.getIdleMode() + "||" + counterMotor.getIdleMode());
 //        counterMotor.setClosedLoopRampRate(30);
 //        System.out.println(clockwiseMotor.getClosedLoopRampRate() + "||" + counterMotor.getClosedLoopRampRate() + "||" + clockwiseMotor.getOpenLoopRampRate() + "||" + counterMotor.getOpenLoopRampRate());
@@ -97,6 +97,9 @@ class SwerveMotor {
 //        Putting them here breaks it maybe
 //        counterPID.setIAccum(0.0);
 //        clockwisePID.setIAccum(0.0);
+//        clockwiseEncoder.setPosition(0.0);
+//        counterEncoder.setPosition(0.0);
+        //If change in encoder readings is not proportional to the change in command, omit the encoder value
 
     }
 

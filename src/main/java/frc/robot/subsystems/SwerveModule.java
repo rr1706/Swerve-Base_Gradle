@@ -45,9 +45,9 @@ public class SwerveModule {
 //    private double kD = 8.0e-5;
 
     // Third attempt
-    private double kP = 1.8e-3;
+    private double kP = 1.4e-3;
     private double kI = 0.0;
-    private double kD = 5.7e-5;
+    private double kD = 0.0/*5.7e-5*/;
 
     private double maxRPM = 5676;
 
@@ -98,12 +98,13 @@ public class SwerveModule {
         //Low Pass Filter
         angle = swerveMotor.getAngle();
         angleFilteredOld = angleFiltered;
-        angleFiltered = (angle+angleOld+4*angleFilteredOld)/6;
+        angleFiltered = (angle+angleOld+9*angleFilteredOld)/11;
 
         trueError = MathUtils.calculateContinuousError(angleCommand, angleFiltered, 360.0, 0.0);
 
         rawError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
-
+        SmartDashboard.putNumber("Combined Rates of Change", angleCommand*angle);
+        //If angleCommandOld/angleOld != angleCommand/angle, angle = angleOld
         if (id == 1) {
             SmartDashboard.putNumber("FR Angle Error", trueError);
             SmartDashboard.putNumber("FR Raw Angle Error", rawError);
@@ -241,7 +242,7 @@ back_right_drift=0.0059,0.0027
 //            }
 //System.out.println(rotationCommand);
 //        swerveMotor.set(speedCommand, rotationCommand);
-            swerveMotor.set(0.25, 0.0);
+            swerveMotor.set(speedCommand, rotationCommand);
 
 //        } else {
 //            swerveMotor.set(0.0, 0.0);
