@@ -1,12 +1,15 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.*;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Ds;
+import frc.robot.RRLogger;
 import frc.robot.utilities.MathUtils;
 
 class SwerveMotor {
     private static final int CAN_TIMEOUT = 20;
-    private static final double SMALL_NUMBER = 0.025; //Was 0.05
+    private static final double SMALL_NUMBER = 0.0075; //Was 0.05
 
     private double[] moduleDrift;
 
@@ -18,21 +21,29 @@ class SwerveMotor {
 
     private CANPIDController clockwisePID;
     private CANPIDController counterPID;
-//Ethan doing thing
-    private double motorP = 0.001;
-    //private double motorP = 4e-4;
-    private double motorI = 0.0;
-    private double motorD = 2e-5;
-    private double motorF = 0.0;
-    private double kMaxOutput = 1;
-    private double kMinOutput = -1;
-    private double maxRPM = 5676;
+
+    private final double THEORETICAL_MAX = 5676;
+    //4900 works at 12.7 Volts
+    private double kMaxOutput = 0.9;
+    private double kMinOutput = -0.9;
+//Ian Idea for future: set maxRPM based off battery voltage, so battery doesn't inhibit drive train
+
+    private double motorP = 1.651e-4;
+    private double motorI = 0.9e-6;
+    private double motorD = 0.9e-6;
+    private double motorF = 0.93/THEORETICAL_MAX;
+//Best value so far
+//    private double motorP = 1.651e-4;
+//    private double motorI = 0.9e-6;
+//    private double motorD = 0.9e-6;
+//    private double motorF = 0.93/maxRPM;
+
 
     private double lastValidVelocity1 = 0.0;
     private double lastValidVelocity2 = 0.0;
 
-    private double lastValidDistance1 = 0.0;
-    private double lastValidDistance2 = 0.0;
+    private double lastValidDistanceClockwise = 0.0;
+    private double lastValidDistanceCounter = 0.0;
 
     int zeros = 0;
     int goods = 0;
@@ -45,6 +56,7 @@ class SwerveMotor {
      * @param canPortCC Port of the motor that moves the wheel CounterClockwise
      */
     SwerveMotor(int canPortC, int canPortCC) {
+
         clockwiseMotor = new CANSparkMax(canPortC, CANSparkMaxLowLevel.MotorType.kBrushless);
         counterMotor = new CANSparkMax(canPortCC, CANSparkMaxLowLevel.MotorType.kBrushless);
 
@@ -75,6 +87,17 @@ class SwerveMotor {
         counterPID.setIZone(0.0);
         counterPID.setFF(motorF);
         counterPID.setOutputRange(kMinOutput, kMaxOutput);
+
+        clockwiseMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
+        counterMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
+//        System.out.println(clockwiseMotor.getIdleMode() + "||" + counterMotor.getIdleMode());
+//        counterMotor.setClosedLoopRampRate(30);
+//        System.out.println(clockwiseMotor.getClosedLoopRampRate() + "||" + counterMotor.getClosedLoopRampRate() + "||" + clockwiseMotor.getOpenLoopRampRate() + "||" + counterMotor.getOpenLoopRampRate());
+        //Look into: counterPID.getIMaxAccum() and counterPID.setIAccum()
+//        Putting them here breaks it maybe
+//        counterPID.setIAccum(0.0);
+//        clockwisePID.setIAccum(0.0);
+
     }
 
     /**
@@ -83,24 +106,34 @@ class SwerveMotor {
      * @param rotationCommand Moves wheel clockwise
      */
     void set(double speedCommand, double rotationCommand) {
+          double MAX_RPM = 4000 /*80*(Ds.getBatteryVoltage()-8)*/; //Todo: Bad equation, fix later
 //        speedCommand*=0.8;
 //        rotationCommand*=0.8;
 
-        //Todo 0.5 might not be perfect, and the best relationship might not be linear at all
-        if (Math.abs(speedCommand) + Math.abs(rotationCommand) < 0.5/*0.3*/) {
-            clockwisePID.setP(0.0004);
-            counterPID.setP(0.0004);
-        } else {
-            clockwisePID.setP(motorP);
-            counterPID.setP(motorP);
-        }
+//        if (Math.abs(speedCommand) + Math.abs(rotationCommand) > 0.8/*0.3*/) {
+//            clockwisePID.setFF(0.8/maxRPM);
+//            counterPID.setFF(0.8/maxRPM);
+//            counterPID.setI(1e-6);
+//            clockwisePID.setI(1e-6);
+//
+//            clockwisePID.setP(1.4e-4);
+//            counterPID.setP(1.4e-4);
+//        } else {
+//            clockwisePID.setP(motorP);
+//            counterPID.setP(motorP);
+//        }
 
-        if (speedCommand > SMALL_NUMBER) {
-            rotationCommand += speedCommand * moduleDrift[0];
-        } else if (speedCommand < -SMALL_NUMBER) {
-            rotationCommand += speedCommand * moduleDrift[1];
-        }
+//        if (Math.abs(rotationCommand) < SMALL_NUMBER) {
+//            System.out.println(rotationCommand);
+//
+//            rotationCommand = 0.0;
+//        }
 
+//        if (speedCommand > SMALL_NUMBER) {
+//            rotationCommand += speedCommand * moduleDrift[0];
+//        } else if (speedCommand < -SMALL_NUMBER) {
+//            rotationCommand += speedCommand * moduleDrift[1];
+//        }
         double clockwiseCommand = speedCommand + rotationCommand;
         double counterCommand = speedCommand - rotationCommand;
 //        double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
@@ -126,35 +159,51 @@ class SwerveMotor {
 //        }
 
         if (id == 1) {
-            SmartDashboard.putNumber("Front Right Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Front Right Ticks", lastValidDistanceClockwise);
             SmartDashboard.putNumber("Front Right Velocity", clockwiseEncoder.getVelocity());
         } else if (id == 2) {
-            SmartDashboard.putNumber("Front Left Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Front Left Ticks", lastValidDistanceClockwise);
             SmartDashboard.putNumber("Front Left Velocity", clockwiseEncoder.getVelocity());
         } else if (id == 3) {
-            SmartDashboard.putNumber("Back Right Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Back Right Ticks", lastValidDistanceClockwise);
             SmartDashboard.putNumber("Back Right Velocity", clockwiseEncoder.getVelocity());
         } else {
-            SmartDashboard.putNumber("Back Left Ticks", clockwiseEncoder.getPosition());
+            SmartDashboard.putNumber("Back Left Ticks", lastValidDistanceClockwise);
             SmartDashboard.putNumber("Back Left Velocity", clockwiseEncoder.getVelocity());
+//            System.out.println((lastValidDistanceCounter+lastValidDistanceClockwise)*36.0  + "| |" + lastValidDistanceClockwise + "||" + lastValidDistanceCounter + "||" + clockwiseMotor.getAppliedOutput() + "||" + counterMotor.getAppliedOutput());
+//            System.out.println((lastValidDistanceCounter+lastValidDistanceClockwise)*36.0 + "| |" + (clockwiseEncoder.getVelocity()+counterEncoder.getVelocity()) + "| |" + clockwiseEncoder.getVelocity() + "| | " + counterEncoder.getVelocity());
+//            System.out.println(clockwiseCommand*MAX_RPM + " | | " + clockwiseEncoder.getVelocity());
+
+            RRLogger.addData("Clockwise Motor Command", clockwiseCommand*MAX_RPM);
+            RRLogger.addData("Counter Motor Command", counterCommand*MAX_RPM);
+            RRLogger.addData("Clockwise Encoder Position", lastValidDistanceClockwise);
+            RRLogger.addData("Counter Encoder Position", lastValidDistanceCounter);
+            RRLogger.addData("Clockwise Encoder Velocity", clockwiseEncoder.getVelocity());
+            RRLogger.addData("Counter Encoder Velocity", counterEncoder.getVelocity());
         }
 
+//        if ((rotationCommand == 0.0) && (clockwiseEncoder.getVelocity() + counterEncoder.getVelocity() > 15.0)) {
+//            System.out.println("id:" + id + " | " + clockwiseEncoder.getVelocity() + "| | " + counterEncoder.getVelocity() + " | | " + (clockwiseEncoder.getVelocity()+counterEncoder.getVelocity()));
+//        }
+
         if (Math.abs(clockwiseCommand) > SMALL_NUMBER) {
-            clockwiseCommand*=maxRPM;
+            clockwiseCommand*=MAX_RPM;
             clockwisePID.setReference(clockwiseCommand, ControlType.kVelocity);
+//            clockwisePID.setReference(clockwiseCommand, ControlType.kVoltage);
+//            clockwiseMotor.set(clockwiseCommand);
 
         } else {
             clockwiseMotor.stopMotor();
         }
 
         if (Math.abs(counterCommand) > SMALL_NUMBER) {
-            counterCommand*=maxRPM;
+            counterCommand*=MAX_RPM;
             counterPID.setReference(-counterCommand, ControlType.kVelocity);
-
+//            counterPID.setReference(-counterCommand, ControlType.kVoltage);
+//            counterMotor.set(-counterCommand);
         } else {
             counterMotor.stopMotor();
         }
-
     }
 
 
@@ -162,9 +211,7 @@ class SwerveMotor {
      * @return sum of both encoders, wrapped from 0 to 360
      */
     double getAngle() {
-        return MathUtils.resolveDeg((lastValidDistance1 + lastValidDistance2)*36.0);
-
-
+        return MathUtils.resolveDeg((lastValidDistanceClockwise + lastValidDistanceCounter)*36.0);
     }
 
     /**
@@ -172,18 +219,19 @@ class SwerveMotor {
      */
     double getDistance() {
 
-//        if (lastValidDistance1 != clockwiseEncoder.getPosition() && lastValidDistance2 != counterEncoder.getPosition()) {
+//        if (lastValidDistanceClockwise != clockwiseEncoder.getPosition() && lastValidDistanceCounter != counterEncoder.getPosition()) {
 //            if (clockwiseEncoder.getPosition() != 0.0 && counterEncoder.getPosition() != 0.0) {
-                lastValidDistance1 = clockwiseEncoder.getPosition();
-                lastValidDistance2 = counterEncoder.getPosition();
+                lastValidDistanceClockwise = clockwiseEncoder.getPosition();
+                lastValidDistanceCounter = counterEncoder.getPosition();
 //            }
 //        }
 
-        return lastValidDistance1 - lastValidDistance2;
+        return lastValidDistanceClockwise - lastValidDistanceCounter;
     }
 
     void reset() {
-
+        clockwiseEncoder.setPosition(0);
+        counterEncoder.setPosition(0);
     }
 
     void stop() {

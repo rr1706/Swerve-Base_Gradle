@@ -8,9 +8,9 @@ front_left_ports=6,7
 back_left_ports=4,5
 back_right_ports=2,3
 
-front_right_drift=-0.0017,0.0
-front_left_drift=0.001,0.0
-back_left_drift=-0.001,0.0
-back_right_drift=0.003,0.0
+front_right_drift=0.0,0.0
+front_left_drift=0.0,0.0
+back_left_drift=0.0,0.0
+back_right_drift=0.0,0.0
 
 robot_backwards=true

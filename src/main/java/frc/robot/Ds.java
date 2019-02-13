@@ -2,11 +2,11 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
-class Ds {
+public class Ds {
 
 	private static DriverStation ds = DriverStation.getInstance();
 
-	static double getBatteryVoltage() {
+	public static double getBatteryVoltage() {
 		return ds.getBatteryVoltage();
 	}
 }

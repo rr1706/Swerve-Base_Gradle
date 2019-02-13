@@ -128,4 +128,11 @@ public class SwerveDrivetrain {
 
 		return MathUtils.pythagorean(xAvg, yAvg);
 	}
+
+	public void resetWheels() {
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_RIGHT).resetDistance();
+		swerveModules.get(SwerveDrivetrain.WheelType.FRONT_LEFT).resetDistance();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_LEFT).resetDistance();
+		swerveModules.get(SwerveDrivetrain.WheelType.BACK_RIGHT).resetDistance();
+	}
 }

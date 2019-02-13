@@ -19,6 +19,7 @@ public class SwerveModule {
     private double previousDistance = 0;
     private double previousRobotDistance = 0.0;
     private double trueError;
+    private double rawError;
     private double delta = 0.0;
     private double rightDelta = 0.0;
     private double forwardDelta = 0.0;
@@ -27,13 +28,26 @@ public class SwerveModule {
     private SwerveMotor swerveMotor;
     private PIDController anglePID;
     private double keepPIDAngle;
-    private double angle;
+    private double angle = 0.0;
     private boolean wheelReversed;
-    double joerot = 400.0;
+    private double reversePoint;
+    double joerot = 200.0;
 
-    double kP = 9.4e-4;
-    double kI = 0.0;
-    double kD = 0.0;
+    public static XboxController xbox1 = new XboxController(0);
+
+    private double angleOld;
+    private double angleFiltered = 0.0;
+    private double angleFilteredOld = 0.0;
+
+//Good base values:
+//    private double kP = 1.45e-4;
+//    private double kI = 1.6e-6;
+//    private double kD = 8.0e-5;
+
+    // Third attempt
+    private double kP = 1.8e-3;
+    private double kI = 0.0;
+    private double kD = 5.7e-5;
 
     private double maxRPM = 5676;
 
@@ -46,6 +60,7 @@ public class SwerveModule {
 //    private double turn_command_counts = 0.0;
 //    private double omega_command = 0.0;
 //    private double dRPM_command = 0.0;
+
 
     private double rotationCommand = 0.0;
 
@@ -66,7 +81,7 @@ public class SwerveModule {
 //TODO, Kp was 0.0012
         anglePID = new PIDController(0.0, 0.0, 0.0);
         anglePID.setContinuous();
-        anglePID.setInputRange(0.0, 359.0);
+        anglePID.setInputRange(0.0, 360.0);
         anglePID.setOutputRange(-1.0, 1.0);
         anglePID.enable();
 
@@ -79,16 +94,36 @@ public class SwerveModule {
     void drive() {
         distance = swerveMotor.getDistance() * DISTANCE_PER_PULSE;
 
+        angleOld = angle;
+        //Low Pass Filter
         angle = swerveMotor.getAngle();
+        angleFilteredOld = angleFiltered;
+        angleFiltered = (angle+angleOld+4*angleFilteredOld)/6;
 
-        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
+        trueError = MathUtils.calculateContinuousError(angleCommand, angleFiltered, 360.0, 0.0);
+
+        rawError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
+
+        if (id == 1) {
+            SmartDashboard.putNumber("FR Angle Error", trueError);
+            SmartDashboard.putNumber("FR Raw Angle Error", rawError);
+        } else if (id == 2) {
+            SmartDashboard.putNumber("FL Angle Error", trueError);
+            SmartDashboard.putNumber("FL Raw Angle Error", rawError);
+        } else if (id == 3) {
+            SmartDashboard.putNumber("BR Angle Error", trueError);
+            SmartDashboard.putNumber("BR Raw Angle Error", rawError);
+        } else {
+            SmartDashboard.putNumber("BL Angle Error", trueError);
+            SmartDashboard.putNumber("BL Raw Angle Error", rawError);
+        }
 
         delta = distance - previousDistance;
 
-        if (id == 3) {
+//        if (id == 3) {
 //            System.out.println(angle + " | | " + Time.get());
 //            System.out.println(dRPM_command + " | | " + alpha_er + " | | " + raw_turn_time + " | | " + turn_command_counts + " | | " + omega_command);
-        }
+//        }
 
 //        if (wheelReversed) {
 //            delta = previousDistance - distance;
@@ -101,20 +136,25 @@ public class SwerveModule {
          * go opposite to command and reverse translation
          */
 
-         if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
-            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
-            speedCommand *= -1;
+//         if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
+//            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
+//            speedCommand *= -1;
+//
+//            if (!wheelReversed) {
+//                reversePoint = getAngle();
+//            }
+//            wheelReversed = true;
+//        } else {
+//             if (!wheelReversed) {
+//                 reversePoint = getAngle();
+//             }
+//            wheelReversed = false;
+//       }
 
-            wheelReversed = true;
-        } else {
-            wheelReversed = false;
-       }
-
-        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
 
 
-        //Relatively stable value of kP is 4e-4
-        //Good ratio; 30:1:1
+        trueError = MathUtils.calculateContinuousError(angleCommand, angleFiltered, 360.0, 0.0);
+
 
 
         anglePID.setPID(SmartDashboard.getNumber("kP", kP/*0.9e-3, 1e-3*/), SmartDashboard.getNumber("kI", kI/*6.8e-6, 1e-5*/), SmartDashboard.getNumber("kD", kD/*1.9e-4, 2e-4*/));
@@ -131,15 +171,15 @@ back_right_drift=0.0059,0.0027
  */
         anglePID.setInput(angle);
 
-        anglePID.setSetpoint(angleCommand);
+
 //        anglePID.setSetpoint(90*speedCommand);
 
 
         //Todo
 
-//        if (id == 3) {
-//            System.out.println(angleCommand + " :Command");
-//        }
+        if (id == 4) {
+//            System.out.println(trueError + "||" + angle + "||" + angleCommand);
+        }
 
 
 //        alpha_er = trueError;
@@ -148,8 +188,13 @@ back_right_drift=0.0059,0.0027
          * If wheel is not translating, keep the wheel turned where it is
          */
 
-        if (Math.abs(speedCommand) <= 0.1) {
-//            alpha_er = 0.0;
+        if (Math.abs(speedCommand) > 0.01) {
+            anglePID.setSetpoint(angleCommand);
+            if(id == 3 || id == 2) {
+//                System.out.println(angleCommand);
+            }
+        } else {
+            speedCommand = 0.0;
         }
 
         /*
@@ -177,26 +222,35 @@ back_right_drift=0.0059,0.0027
 //            rotationCommand = 0.0;
 //        }
 
-        if (Math.abs(trueError) > 10) {
-            rotationCommand = trueError/1100.0;
-        } else {
-            rotationCommand = 0.0;
-        }
+//        if (Math.abs(trueError) > 1) {
+//            rotationCommand = trueError/1020.0; //Todo Tweaking the value to make it nicer
+//        } else {
+//            rotationCommand = 0.0;
+//        }
+
+        rotationCommand = anglePID.performPID();
+
 //        System.out.println(rotationCommand);
-//        if ((id == 4) || (id == 4)) {
+//        if (id == 3) {
 //        rotationCommand = joerot/maxRPM;
-//        joerot = joerot + 0.0;
-        swerveMotor.set(speedCommand, rotationCommand);
-//        swerveMotor.set(speedCommand, anglePID.performPID());
+//        joerot = joerot + 0.02;
+
+//            rotationCommand = xbox1.RStickX()/20;
+//            if (Math.abs(rotationCommand) < 0.008) {
+//                rotationCommand = 0.0;
+//            }
+//System.out.println(rotationCommand);
+//        swerveMotor.set(speedCommand, rotationCommand);
+            swerveMotor.set(0.25, 0.0);
 
 //        } else {
 //            swerveMotor.set(0.0, 0.0);
 //        }
 /*
-front_right_drift=-0.0017,0.0
+front_right_drift=-0.001,-0.001
 front_left_drift=0.001,0.0
-back_left_drift=-0.001,0.0
-back_right_drift=0.003,0.0
+back_left_drift=-0.002,-0.002
+back_right_drift=0.0028,0.0028
  */
 
         rightDelta = delta * Math.sin(Math.toRadians(angle));

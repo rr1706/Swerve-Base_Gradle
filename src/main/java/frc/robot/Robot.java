@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.subsystems.*;
 import frc.robot.subsystems.SwerveDrivetrain.WheelType;
 import frc.robot.utilities.*;
+import frc.robot.RRLogger;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -247,6 +248,7 @@ public class Robot extends TimedRobot {
 		accel = new Acceleration();
 		decelFWD = new Acceleration();
 		decelSTR = new Acceleration();
+
 	}
 
 	public void autonomousInit() {
@@ -454,11 +456,13 @@ public class Robot extends TimedRobot {
 //		jet.startTeleop();
 
 		imu.setOffset(imuOffset);
-
+//Sets ids
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setID(1);
 		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setID(2);
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setID(4);
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setID(3);
+
+		RRLogger.start();
 
 	}
 
@@ -508,12 +512,11 @@ public class Robot extends TimedRobot {
 			STR *= accel.calculate();
 
 			if (Math.abs(FWD) > 0.3 || Math.abs(STR) > 0.3) {
-				decelFWD.set(prevFWD[cmdCounter], 0.0, 0.35);
-				decelSTR.set(prevSTR[cmdCounter], 0.0, 0.35);
+				decelFWD.set(prevFWD[cmdCounter], 0.0, 0.8);
+				decelSTR.set(prevSTR[cmdCounter], 0.0, 0.8);
 			}
-
 		} else {
-			accel.set(0.0, 1.0, 0.6);
+			accel.set(0.0, 1.0, 2.2);
 			FWD = decelFWD.calculate();
 			STR = decelSTR.calculate();
 		}
@@ -602,19 +605,25 @@ public class Robot extends TimedRobot {
 
 		keepAngle();
 
-
 		if (robotBackwards) {
 			//FIXME: Reverse RCW to fix point rotation issue
 			driveTrain.drive(new Vector(-STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		} else {
-			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
+			driveTrain.drive(new Vector(STR, FWD), -RCW); // x = str, y = fwd, rotation = rcw
 		}
+
+		RRLogger.writeFromQueue();
+
 	}
 
 	public void robotPeriodic() {
 		currentDistance += SwerveDrivetrain.getRobotDistance();
 //		System.out.println("Robot Dist: " + SwerveDrivetrain.getRobotDistance());
 		SmartDashboard.putNumber("Distance", currentDistance);
+
+		if (xbox1.Start()) {
+			driveTrain.resetWheels();
+		}
 	}
 
 	public void disabledInit() {
