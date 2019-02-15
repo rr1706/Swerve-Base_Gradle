@@ -109,7 +109,6 @@ public class Robot extends TimedRobot {
 
 	private void keepAngle() {
 		// LABEL keepAngle
-
 		SwerveCompensate.enable();
 
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
