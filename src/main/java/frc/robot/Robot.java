@@ -111,7 +111,6 @@ public class Robot extends TimedRobot {
 	private void keepAngle() {
 		//Fixme, THIS causes the point rotation
 		// LABEL keepAngle
-
 		SwerveCompensate.enable();
 
 		double leadNum = SmartDashboard.getNumber("leadNum", 0);
