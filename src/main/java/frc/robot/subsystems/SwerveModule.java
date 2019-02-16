@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utilities.MathUtils;
 import frc.robot.utilities.PIDController;
 import frc.robot.utilities.Vector;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /**
  * A swerve module.
@@ -31,7 +32,10 @@ public class SwerveModule {
     private double angle = 0.0;
     private boolean wheelReversed;
     private double reversePoint;
-    double joerot = 200.0;
+    private DigitalInput wheelSensor;
+    private double wheelOffsetFirst = 0.0;
+    private double wheelOffset = 0.0;
+    private double sensorCounter = 0.0;
 
     public static XboxController xbox1 = new XboxController(0);
 
@@ -45,7 +49,7 @@ public class SwerveModule {
 //    private double kD = 8.0e-5;
 
     // Third attempt
-    private double kP = 1.4e-3;
+    private double kP = 1.3e-3;
     private double kI = 0.0;
     private double kD = 0.0/*5.7e-5*/;
 
@@ -65,16 +69,17 @@ public class SwerveModule {
     private double rotationCommand = 0.0;
 
 
-
     double spin = 0;
 
     private int id;
 
+
     /**
      * @param canPortC Port of the motor that moves the wheel Clockwise
      * @param canPortCC Port of the motor that moves the wheel CounterClockwise
+     * @param sensorPort Roborio port of the allignment sensor
      */
-    SwerveModule(int canPortC, int canPortCC) {
+    SwerveModule(int canPortC, int canPortCC, int sensorPort) {
         super();
 
         swerveMotor = new SwerveMotor(canPortC, canPortCC);
@@ -88,6 +93,7 @@ public class SwerveModule {
         SmartDashboard.putNumber("kP", kP);
         SmartDashboard.putNumber("kI", kI);
         SmartDashboard.putNumber("kD", kD);
+        wheelSensor = new DigitalInput(sensorPort);
     }
 
 
@@ -96,27 +102,126 @@ public class SwerveModule {
 
         angleOld = angle;
         //Low Pass Filter
-        angle = swerveMotor.getAngle();
+        angle = MathUtils.resolveDeg(wheelOffset+swerveMotor.getAngle());
         angleFilteredOld = angleFiltered;
-        angleFiltered = (angle+angleOld+9*angleFilteredOld)/11;
 
-        trueError = MathUtils.calculateContinuousError(angleCommand, angleFiltered, 360.0, 0.0);
+        if (angle-angleOld >= 45) {
+            angleOld += 360;
+        } else if (angleOld-angle >= 45) {
+            angleOld -= 360;
+        }
+
+        angleFiltered = MathUtils.resolveDeg((angle+angleOld+9*angleFilteredOld)/11);
+
+        trueError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
 
         rawError = MathUtils.calculateContinuousError(angleCommand, angle, 360.0, 0.0);
         SmartDashboard.putNumber("Combined Rates of Change", angleCommand*angle);
-        //If angleCommandOld/angleOld != angleCommand/angle, angle = angleOld
+
+
         if (id == 1) {
+            SmartDashboard.putNumber("FR Angle Command", angleCommand);
+            SmartDashboard.putNumber("FR Speed Command", speedCommand);
+            SmartDashboard.putNumber("FR Angle", swerveMotor.getAngle());
             SmartDashboard.putNumber("FR Angle Error", trueError);
             SmartDashboard.putNumber("FR Raw Angle Error", rawError);
+            SmartDashboard.putBoolean("FR Sensor", !wheelSensor.get());
+
+            SmartDashboard.putNumber("FR Offset", wheelOffset);
+            SmartDashboard.putNumber("FR Calculated Angle", swerveMotor.getAngle()+wheelOffset);
+            SmartDashboard.putNumber("FR Sensor Counts", sensorCounter);
+
+            SmartDashboard.putNumber("FR Distance", distance);
+
+            if (!wheelSensor.get()) {
+                sensorCounter++;
+                System.out.println("Sensor 1: " + swerveMotor.getAngle());
+
+                if (wheelOffsetFirst == 0.0) {
+                    wheelOffsetFirst = angle;
+                } else {
+                    wheelOffset = wheelOffsetFirst-angle;
+                }
+            }
         } else if (id == 2) {
+            SmartDashboard.putNumber("FL Angle Command", angleCommand);
+            SmartDashboard.putNumber("FL Filtered Angle", angleFiltered);
+            SmartDashboard.putNumber("FL Speed Command", speedCommand);
+            SmartDashboard.putNumber("FL Angle", swerveMotor.getAngle());
+//            SmartDashboard.putNumber("FL Raw Angle", swerveMotor.getRawAngle());
             SmartDashboard.putNumber("FL Angle Error", trueError);
             SmartDashboard.putNumber("FL Raw Angle Error", rawError);
+            SmartDashboard.putBoolean("FL Sensor", !wheelSensor.get());
+
+            SmartDashboard.putNumber("FL Offset", wheelOffset);
+            SmartDashboard.putNumber("FL Calculated Angle", swerveMotor.getAngle()+wheelOffset);
+            SmartDashboard.putNumber("FL Sensor Counts", sensorCounter);
+
+            SmartDashboard.putNumber("FL Distance", distance);
+
+
+            if (!wheelSensor.get()) {
+                sensorCounter++;
+                System.out.println("Sensor 2: " + swerveMotor.getAngle());
+                if (wheelOffsetFirst == 0.0) {
+                    wheelOffsetFirst = angle;
+                } else {
+                    wheelOffset = wheelOffsetFirst-angle;
+                }
+            }
+
         } else if (id == 3) {
+            SmartDashboard.putNumber("BR Angle", angle);
+            SmartDashboard.putNumber("BR Angle Command", angleCommand);
+            SmartDashboard.putNumber("BR Speed Command", speedCommand);
             SmartDashboard.putNumber("BR Angle Error", trueError);
             SmartDashboard.putNumber("BR Raw Angle Error", rawError);
+            SmartDashboard.putBoolean("BR Sensor", !wheelSensor.get());
+
+            SmartDashboard.putBoolean("BR Sensor", !wheelSensor.get());
+            SmartDashboard.putNumber("BR Offset", wheelOffset);
+            SmartDashboard.putNumber("BR Calculated Angle", swerveMotor.getAngle()+wheelOffset);
+            SmartDashboard.putNumber("BR Sensor Counts", sensorCounter);
+
+            SmartDashboard.putNumber("BR Distance", distance);
+
+            if (!wheelSensor.get()) {
+                sensorCounter++;
+                System.out.println("Sensor 3: " + swerveMotor.getAngle());
+
+                if (wheelOffsetFirst == 0.0) {
+                    wheelOffsetFirst = angle;
+                } else {
+                    wheelOffset = wheelOffsetFirst-angle;
+                }
+            }
+
         } else {
+            SmartDashboard.putNumber("BL Angle", angle);
+            SmartDashboard.putNumber("BL Angle Command", angleCommand);
+            SmartDashboard.putNumber("BL Speed Command", speedCommand);
             SmartDashboard.putNumber("BL Angle Error", trueError);
             SmartDashboard.putNumber("BL Raw Angle Error", rawError);
+            SmartDashboard.putBoolean("BL Sensor", !wheelSensor.get());
+
+            SmartDashboard.putBoolean("BL Sensor", !wheelSensor.get());
+
+            SmartDashboard.putNumber("BL Offset", wheelOffset);
+            SmartDashboard.putNumber("BL Calculated Angle", swerveMotor.getAngle()+wheelOffset);
+            SmartDashboard.putNumber("BL Sensor Counts", sensorCounter);
+
+            SmartDashboard.putNumber("BL Distance", distance);
+
+            if (!wheelSensor.get()) {
+                sensorCounter++;
+                System.out.println("Sensor 4: " + swerveMotor.getAngle());
+
+                if (wheelOffsetFirst == 0.0) {
+                    wheelOffsetFirst = angle;
+                } else {
+                    wheelOffset = wheelOffsetFirst-angle;
+                }
+            }
         }
 
         delta = distance - previousDistance;
@@ -126,36 +231,31 @@ public class SwerveModule {
 //            System.out.println(dRPM_command + " | | " + alpha_er + " | | " + raw_turn_time + " | | " + turn_command_counts + " | | " + omega_command);
 //        }
 
-//        if (wheelReversed) {
-//            delta = previousDistance - distance;
-//        } else {
-//            delta = distance - previousDistance;
-//        }
+        if (wheelReversed) {
+            delta = previousDistance - distance;
+        } else {
+            delta = distance - previousDistance;
+        }
 
         /*
          * If the wheel has to move over 90 degrees
          * go opposite to command and reverse translation
          */
 
-//         if (Math.abs(trueError) > TICKS_PER_REVOLUTION/4.0) {
-//            angleCommand = MathUtils.reverseWheelDirection(angleCommand);
-//            speedCommand *= -1;
-//
-//            if (!wheelReversed) {
-//                reversePoint = getAngle();
-//            }
-//            wheelReversed = true;
-//        } else {
-//             if (!wheelReversed) {
-//                 reversePoint = getAngle();
-//             }
-//            wheelReversed = false;
-//       }
+            if (Math.abs(trueError) > TICKS_PER_REVOLUTION / 4.0) {
+                angleCommand = MathUtils.reverseWheelDirection(angleCommand);
+                speedCommand *= -1;
 
-
-
-        trueError = MathUtils.calculateContinuousError(angleCommand, angleFiltered, 360.0, 0.0);
-
+                if (!wheelReversed) {
+                    reversePoint = getAngle();
+                }
+                wheelReversed = true;
+            } else {
+                if (!wheelReversed) {
+                    reversePoint = getAngle();
+                }
+                wheelReversed = false;
+            }
 
 
         anglePID.setPID(SmartDashboard.getNumber("kP", kP/*0.9e-3, 1e-3*/), SmartDashboard.getNumber("kI", kI/*6.8e-6, 1e-5*/), SmartDashboard.getNumber("kD", kD/*1.9e-4, 2e-4*/));
@@ -178,9 +278,9 @@ back_right_drift=0.0059,0.0027
 
         //Todo
 
-        if (id == 4) {
+//        if (id == 4) {
 //            System.out.println(trueError + "||" + angle + "||" + angleCommand);
-        }
+//        }
 
 
 //        alpha_er = trueError;
@@ -191,9 +291,9 @@ back_right_drift=0.0059,0.0027
 
         if (Math.abs(speedCommand) > 0.01) {
             anglePID.setSetpoint(angleCommand);
-            if(id == 3 || id == 2) {
+//            if(id == 3 || id == 2) {
 //                System.out.println(angleCommand);
-            }
+//            }
         } else {
             speedCommand = 0.0;
         }
@@ -240,15 +340,21 @@ back_right_drift=0.0059,0.0027
 //            if (Math.abs(rotationCommand) < 0.008) {
 //                rotationCommand = 0.0;
 //            }
-//System.out.println(rotationCommand);
-//        swerveMotor.set(speedCommand, rotationCommand);
+//        if (id== 2) {
+        //FIXME ID 2 is kinda angry
+        if (id ==2) {
+            speedCommand =  -speedCommand;
+        }
             swerveMotor.set(speedCommand, rotationCommand);
+//        } else {
+//            swerveMotor.set(0.0, 0.0);
+//        }
 
 //        } else {
 //            swerveMotor.set(0.0, 0.0);
 //        }
 /*
-front_right_drift=-0.001,-0.001
+front_right_`=-0.001,-0.001
 front_left_drift=0.001,0.0
 back_left_drift=-0.002,-0.002
 back_right_drift=0.0028,0.0028
@@ -260,22 +366,15 @@ back_right_drift=0.0028,0.0028
 
 
 
-        if (id == 3) {
+//        if (id == 3) {
 //            SmartDashboard.putNumber("BL Angle Command", anglePID.performPID());
-            SmartDashboard.putNumber("BL Angle", angle);
-            SmartDashboard.putNumber("BL Error", trueError);
-
-        }
-
-        if (id == 2) {
-            SmartDashboard.putNumber("FL Angle", angle);
-            SmartDashboard.putNumber("FL Error", trueError);
-        }
-
+//            SmartDashboard.putNumber("BL Angle", angle);
+//            SmartDashboard.putNumber("BL Error", trueError);
+//
+//        }
 
         previousDistance = distance;
         previousRobotDistance = SwerveDrivetrain.getRobotDistance();
-
     }
 
     public void setID(int id) {
@@ -283,9 +382,9 @@ back_right_drift=0.0028,0.0028
         swerveMotor.setID(id);
     }
 
-    public void setDrift(String[] drift) {
-        swerveMotor.setDrift(drift);
-    }
+//    public void setDrift(String[] drift) {
+//        swerveMotor.setDrift(drift);
+//    }
 
     public double getAngle() {
         return angle;
