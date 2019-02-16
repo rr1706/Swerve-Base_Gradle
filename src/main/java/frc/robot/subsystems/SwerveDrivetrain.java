@@ -50,10 +50,10 @@ public class SwerveDrivetrain {
 	 */
 	public SwerveDrivetrain() {
 		swerveModules = new HashMap<>();
-		swerveModules.put(WheelType.FRONT_RIGHT, new SwerveModule(Integer.parseInt(FRPorts[0]), Integer.parseInt(FRPorts[1])));
-		swerveModules.put(WheelType.BACK_RIGHT, new SwerveModule(Integer.parseInt(BRPorts[0]), Integer.parseInt(BRPorts[1])));
-		swerveModules.put(WheelType.BACK_LEFT, new SwerveModule(Integer.parseInt(BLPorts[0]), Integer.parseInt(BLPorts[1])));
-		swerveModules.put(WheelType.FRONT_LEFT, new SwerveModule(Integer.parseInt(FLPorts[0]), Integer.parseInt(FLPorts[1])));
+		swerveModules.put(WheelType.FRONT_RIGHT, new SwerveModule(Integer.parseInt(FRPorts[0]), Integer.parseInt(FRPorts[1]), 0));
+		swerveModules.put(WheelType.BACK_RIGHT, new SwerveModule(Integer.parseInt(BRPorts[0]), Integer.parseInt(BRPorts[1]), 3));
+		swerveModules.put(WheelType.BACK_LEFT, new SwerveModule(Integer.parseInt(BLPorts[0]), Integer.parseInt(BLPorts[1]), 2));
+		swerveModules.put(WheelType.FRONT_LEFT, new SwerveModule(Integer.parseInt(FLPorts[0]), Integer.parseInt(FLPorts[1]), 1));
 
 	}
 
@@ -67,6 +67,11 @@ public class SwerveDrivetrain {
 	public void drive(Vector translation, double rotation) {
 		double max = 1.0;
 		double radius;
+
+		SmartDashboard.putNumber("STR", translation.getX());
+		SmartDashboard.putNumber("FWD", translation.getY());
+		SmartDashboard.putNumber("RCW", rotation);
+
 
 		for (WheelType type : swerveModules.keySet()) {
 			SwerveModule wheel = swerveModules.get(type);

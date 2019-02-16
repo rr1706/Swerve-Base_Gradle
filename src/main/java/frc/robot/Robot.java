@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -108,6 +109,7 @@ public class Robot extends TimedRobot {
 	private int cmdCounter = 0;
 
 	private void keepAngle() {
+		//Fixme, THIS causes the point rotation
 		// LABEL keepAngle
 		SwerveCompensate.enable();
 
@@ -124,16 +126,14 @@ public class Robot extends TimedRobot {
 
 			SwerveCompensate.setPID(0.015, 0.0, 0.0);
 			keepAngle = imu.getAngle();
-
 		} else {
-
-			SwerveCompensate.setPID(0.007, 0.0, 0.0);
+			SwerveCompensate.setPID(0.004/*0.008*/, 0.0, 0.0);
 
 			SwerveCompensate.setInput(imu.getAngle());
 			SwerveCompensate.setSetpoint(keepAngle);
 
 			if (!SwerveCompensate.onTarget()) {
-				SwerveCompensate.setPID(0.005, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
+				SwerveCompensate.setPID(0.002/*0.005*/, SmartDashboard.getNumber("CompensateI", 0.0), SmartDashboard.getNumber("CompensateD", 0.0));
 			}
 
 			robotRotation = SwerveCompensate.performPID();
@@ -158,10 +158,10 @@ public class Robot extends TimedRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setPosition(Vector.load(application.getProperty("back_left_pos", "0.0,0.0")));
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setPosition(Vector.load(application.getProperty("back_right_pos", "0.0,0.0")));
 
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDrift(application.getProperty("front_right_drift", "0.0,0.0").split(","));
-		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDrift(application.getProperty("front_left_drift", "0.0,0.0").split(","));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDrift(application.getProperty("back_left_drift", "0.0,0.0").split(","));
-		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDrift(application.getProperty("back_right_drift", "0.0,0.0").split(","));
+//		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_RIGHT).setDrift(application.getProperty("front_right_drift", "0.0,0.0").split(","));
+//		SwerveDrivetrain.swerveModules.get(WheelType.FRONT_LEFT).setDrift(application.getProperty("front_left_drift", "0.0,0.0").split(","));
+//		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setDrift(application.getProperty("back_left_drift", "0.0,0.0").split(","));
+//		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setDrift(application.getProperty("back_right_drift", "0.0,0.0").split(","));
 
 		robotBackwards = Boolean.parseBoolean(application.getProperty("robot_backwards", "false"));
 	}
@@ -247,7 +247,6 @@ public class Robot extends TimedRobot {
 		accel = new Acceleration();
 		decelFWD = new Acceleration();
 		decelSTR = new Acceleration();
-
 	}
 
 	public void autonomousInit() {
@@ -259,7 +258,7 @@ public class Robot extends TimedRobot {
 
 		String choice;
 
-		choice = "/home/lvuser/deploy/Forward.csv";
+		choice = "/home/lvuser/deploy/Test.csv";
 
 
 		SmartDashboard.putString("Autonomous File", choice);
@@ -392,6 +391,8 @@ public class Robot extends TimedRobot {
 				STR = driveCommands.getX();
 				RCW *= rSpeed;
 
+				SmartDashboard.putNumber("Previous Distance", previousDistance);
+
 				if ((Math.abs(SmartDashboard.getNumber("Distance", 0) - previousDistance) >= commands[arrayIndex][4]) || commands[arrayIndex][4] == 0) {
 					driveDone = true;
 					STR = 0;
@@ -420,7 +421,8 @@ public class Robot extends TimedRobot {
 				SmartDashboard.putNumber("RCW", RCW);
 
 				if (robotBackwards) {
-					driveTrain.drive(new Vector(-STR, -FWD), -RCW);
+					//Todo, fix this
+					driveTrain.drive(new Vector(-STR, FWD), -RCW);
 				} else {
 					driveTrain.drive(new Vector(STR, FWD), RCW);
 				}
@@ -435,6 +437,8 @@ public class Robot extends TimedRobot {
 //				System.out.println("Coll: " + collisionDone);
 //				System.out.println("Time: " + timeDone);
 //				System.out.println("TimeNum: " + Time.get() + " | " + (timeBase + commands[arrayIndex][10]));
+
+				SmartDashboard.putNumber("Array", arrayIndex);
 
 				if (driveDone) {
 					arrayIndex++;
@@ -461,7 +465,7 @@ public class Robot extends TimedRobot {
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_RIGHT).setID(4);
 		SwerveDrivetrain.swerveModules.get(WheelType.BACK_LEFT).setID(3);
 
-		RRLogger.start();
+//		RRLogger.start();
 
 	}
 
@@ -469,7 +473,6 @@ public class Robot extends TimedRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-
 		// LABEL teleop periodic
 		autonomous = false;
 
@@ -604,14 +607,15 @@ public class Robot extends TimedRobot {
 
 		keepAngle();
 
+		SmartDashboard.putBoolean("Backwards", robotBackwards);
 		if (robotBackwards) {
-			//FIXME: Reverse RCW to fix point rotation issue
+			//Todo, values might be wonky
 			driveTrain.drive(new Vector(-STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		} else {
-			driveTrain.drive(new Vector(STR, FWD), -RCW); // x = str, y = fwd, rotation = rcw
+			driveTrain.drive(new Vector(STR, FWD), RCW); // x = str, y = fwd, rotation = rcw
 		}
 
-		RRLogger.writeFromQueue();
+//		RRLogger.writeFromQueue();
 
 	}
 
@@ -621,7 +625,11 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("Distance", currentDistance);
 
 		if (xbox1.Start()) {
-			driveTrain.resetWheels();
+//			driveTrain.resetWheels();
+			currentDistance = 0.0;
+//FIXME Can change based off RCW
+			//Not always 1 inch per value
+			//Look into IMU for distance
 		}
 	}
 
@@ -633,7 +641,6 @@ public class Robot extends TimedRobot {
 		if (disabled < 1) {
 			System.out.println("Hello, I am Otto");
 			disabled++;
-
 		}
 
 	}

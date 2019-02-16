@@ -88,8 +88,8 @@ class SwerveMotor {
         counterPID.setFF(motorF);
         counterPID.setOutputRange(kMinOutput, kMaxOutput);
 
-        clockwiseMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 5);
-        counterMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 5);
+        clockwiseMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 3); //5 is the good value
+        counterMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 3);
 //        System.out.println(clockwiseMotor.getIdleMode() + "||" + counterMotor.getIdleMode());
 //        counterMotor.setClosedLoopRampRate(30);
 //        System.out.println(clockwiseMotor.getClosedLoopRampRate() + "||" + counterMotor.getClosedLoopRampRate() + "||" + clockwiseMotor.getOpenLoopRampRate() + "||" + counterMotor.getOpenLoopRampRate());
@@ -137,6 +137,8 @@ class SwerveMotor {
 //        } else if (speedCommand < -SMALL_NUMBER) {
 //            rotationCommand += speedCommand * moduleDrift[1];
 //        }
+
+
         double clockwiseCommand = speedCommand + rotationCommand;
         double counterCommand = speedCommand - rotationCommand;
 //        double clockwiseOvershoot = Math.abs(clockwiseCommand) - 1;
@@ -161,6 +163,7 @@ class SwerveMotor {
 //            lastValidVelocity2 = counterEncoder.getVelocity();
 //        }
 
+        //Todo, weird thing with wheel ID 3
         if (id == 1) {
             SmartDashboard.putNumber("Front Right Ticks", lastValidDistanceClockwise);
             SmartDashboard.putNumber("Front Right Velocity", clockwiseEncoder.getVelocity());
@@ -177,12 +180,12 @@ class SwerveMotor {
 //            System.out.println((lastValidDistanceCounter+lastValidDistanceClockwise)*36.0 + "| |" + (clockwiseEncoder.getVelocity()+counterEncoder.getVelocity()) + "| |" + clockwiseEncoder.getVelocity() + "| | " + counterEncoder.getVelocity());
 //            System.out.println(clockwiseCommand*MAX_RPM + " | | " + clockwiseEncoder.getVelocity());
 
-            RRLogger.addData("Clockwise Motor Command", clockwiseCommand*MAX_RPM);
-            RRLogger.addData("Counter Motor Command", counterCommand*MAX_RPM);
-            RRLogger.addData("Clockwise Encoder Position", lastValidDistanceClockwise);
-            RRLogger.addData("Counter Encoder Position", lastValidDistanceCounter);
-            RRLogger.addData("Clockwise Encoder Velocity", clockwiseEncoder.getVelocity());
-            RRLogger.addData("Counter Encoder Velocity", counterEncoder.getVelocity());
+//            RRLogger.addData("Clockwise Motor Command", clockwiseCommand*MAX_RPM);
+//            RRLogger.addData("Counter Motor Command", counterCommand*MAX_RPM);
+//            RRLogger.addData("Clockwise Encoder Position", lastValidDistanceClockwise);
+//            RRLogger.addData("Counter Encoder Position", lastValidDistanceCounter);
+//            RRLogger.addData("Clockwise Encoder Velocity", clockwiseEncoder.getVelocity());
+//            RRLogger.addData("Counter Encoder Velocity", counterEncoder.getVelocity());
         }
 
 //        if ((rotationCommand == 0.0) && (clockwiseEncoder.getVelocity() + counterEncoder.getVelocity() > 15.0)) {
@@ -213,6 +216,9 @@ class SwerveMotor {
     /**
      * @return sum of both encoders, wrapped from 0 to 360
      */
+    double getRawAngle() {
+        return /*MathUtils.resolveDeg(*/(lastValidDistanceClockwise + lastValidDistanceCounter)*36.0/*)*/;
+    }
     double getAngle() {
         return MathUtils.resolveDeg((lastValidDistanceClockwise + lastValidDistanceCounter)*36.0);
     }
@@ -224,8 +230,9 @@ class SwerveMotor {
 
 //        if (lastValidDistanceClockwise != clockwiseEncoder.getPosition() && lastValidDistanceCounter != counterEncoder.getPosition()) {
 //            if (clockwiseEncoder.getPosition() != 0.0 && counterEncoder.getPosition() != 0.0) {
-                lastValidDistanceClockwise = clockwiseEncoder.getPosition();
-                lastValidDistanceCounter = counterEncoder.getPosition();
+        //Todo, RCW might affect this!
+        lastValidDistanceClockwise = clockwiseEncoder.getPosition();
+        lastValidDistanceCounter = counterEncoder.getPosition();
 //            }
 //        }
 
@@ -246,8 +253,8 @@ class SwerveMotor {
         this.id = id;
     }
 
-    void setDrift(String[] drift) {
-        moduleDrift[0] = Double.parseDouble(drift[0]);
-        moduleDrift[1] = Double.parseDouble(drift[1]);
-    }
+//    void setDrift(String[] drift) {
+//        moduleDrift[0] = Double.parseDouble(drift[0]);
+//        moduleDrift[1] = Double.parseDouble(drift[1]);
+//    }
 }
