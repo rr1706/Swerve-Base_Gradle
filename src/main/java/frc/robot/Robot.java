@@ -625,8 +625,8 @@ public class Robot extends TimedRobot {
 		SmartDashboard.putNumber("Distance", currentDistance);
 
 		if (xbox1.Start()) {
-//			driveTrain.resetWheels();
-			currentDistance = 0.0;
+			driveTrain.resetWheels();
+			// currentDistance = 0.0;
 //FIXME Can change based off RCW
 			//Not always 1 inch per value
 			//Look into IMU for distance

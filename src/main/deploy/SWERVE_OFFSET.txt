@@ -1,12 +1,12 @@
-front_right_pos=-8.25,8.25
-front_left_pos=8.25,8.25
-back_left_pos=8.25,-8.25
-back_right_pos=-8.25,-8.25
+front_right_pos=8.25,8.25
+front_left_pos=8.25,-8.25
+back_left_pos=-8.25,-8.25
+back_right_pos=-8.25,8.25
 
-front_right_ports=0,1
-front_left_ports=6,7
-back_left_ports=4,5
-back_right_ports=2,3
+front_right_ports=1,2
+front_left_ports=3,4
+back_left_ports=5,6
+back_right_ports=7,8
 
 front_right_drift=0.0,0.0
 front_left_drift=0.0,0.0

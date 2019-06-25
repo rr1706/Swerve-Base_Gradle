@@ -342,9 +342,7 @@ back_right_drift=0.0059,0.0027
 //            }
 //        if (id== 2) {
         //FIXME ID 2 is kinda angry
-        if (id ==2) {
-            speedCommand =  -speedCommand;
-        }
+       
             swerveMotor.set(speedCommand, rotationCommand);
 //        } else {
 //            swerveMotor.set(0.0, 0.0);
